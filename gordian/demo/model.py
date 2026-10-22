@@ -85,8 +85,14 @@ def request_rewrite(client, model: str, prompt: str, artifact_dir: Path,
     artifact_dir.mkdir(parents=True, exist_ok=True)
     (artifact_dir / "prompt.md").write_text(prompt)
     emit(f"Calling model {model}; the full response will be printed when it arrives.")
-    response = client.chat.completions.create(
-        model=model, messages=[{"role": "user", "content": prompt}])
+    try:
+        response = client.chat.completions.create(
+            model=model, messages=[{"role": "user", "content": prompt}])
+    except Exception as exc:
+        # Provider error bodies can contain sensitive request data. Do not echo them.
+        status = getattr(exc, "status_code", None)
+        raise RuntimeError(f"model request failed ({type(exc).__name__}, HTTP {status}); "
+                           "check endpoint, model access, key and timeout") from None
     text = response.choices[0].message.content or ""
     (artifact_dir / "response.md").write_text(text)
     emit("MODEL RESPONSE\n" + text)

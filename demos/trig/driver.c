@@ -4,8 +4,13 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <float.h>
 
 _Static_assert(sizeof(double) == sizeof(uint64_t), "binary64 required");
+_Static_assert(DBL_MANT_DIG == 53 && DBL_MAX_EXP == 1024, "IEEE-754 binary64 required");
+#if __BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__
+#error "This demo decodes KLEE tests as little-endian binary64"
+#endif
 #include "guard.inc"
 
 int main(void)
