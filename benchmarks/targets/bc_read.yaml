@@ -1,0 +1,65 @@
+name: bc_read
+sources:
+- benchmarks/bc/src/args.c
+- benchmarks/bc/src/bc.c
+- benchmarks/bc/src/bc_lex.c
+- benchmarks/bc/src/bc_parse.c
+- benchmarks/bc/src/data.c
+- benchmarks/bc/src/dc.c
+- benchmarks/bc/src/dc_lex.c
+- benchmarks/bc/src/dc_parse.c
+- benchmarks/bc/src/file.c
+- benchmarks/bc/src/history.c
+- benchmarks/bc/src/lang.c
+- benchmarks/bc/src/lex.c
+- benchmarks/bc/src/library.c
+- benchmarks/bc/src/main.c
+- benchmarks/bc/src/num.c
+- benchmarks/bc/src/opt.c
+- benchmarks/bc/src/parse.c
+- benchmarks/bc/src/program.c
+- benchmarks/bc/src/rand.c
+- benchmarks/bc/src/read.c
+- benchmarks/bc/src/vector.c
+- benchmarks/bc/src/vm.c
+- benchmarks/bc/gen/bc_help.c
+- benchmarks/bc/gen/dc_help.c
+- benchmarks/bc/gen/lib.c
+- benchmarks/bc/gen/lib2.c
+family: bc
+float: false
+harness: benchmarks/bc_benchmarks/bc_harness_klee.c
+include_dirs:
+- benchmarks/bc/include
+- benchmarks
+defines:
+- VERSION=7.1.0
+- BC_ENABLED=1
+- DC_ENABLED=1
+- BUILD_TYPE=A
+- EXECPREFIX=
+- MAINEXEC=bc
+- BC_NUM_KARATSUBA_LEN=32
+- BC_ENABLE_NLS=0
+- BC_ENABLE_EXTRA_MATH=1
+- BC_ENABLE_HISTORY=1
+- BC_ENABLE_LIBRARY=0
+- BC_ENABLE_MEMCHECK=0
+- BC_ENABLE_AFL=0
+- BC_ENABLE_OSSFUZZ=0
+- _POSIX_C_SOURCE=200809L
+- _XOPEN_SOURCE=700
+cflags:
+- -g0
+link_flags: []
+coverage_files:
+- benchmarks/bc/src/read.c
+entry_function: real_main
+libc: uclibc
+posix_runtime: true
+klee_args: []
+external_calls: all
+symbolic_input_names: []
+notes: bc (POSIX calculator language; Gavin D. Howard's bc with the GNU bc extensions,
+  referred to as 'GNU bc' for simplicity). The harness builds argv {bc,-e,<expr>}
+  with a symbolic expression and calls real_main. Input is a bc program text.

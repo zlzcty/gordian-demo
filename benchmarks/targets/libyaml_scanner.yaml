@@ -1,0 +1,29 @@
+name: libyaml_scanner
+sources:
+- benchmarks/libyaml/src/api.c
+- benchmarks/libyaml/src/reader.c
+- benchmarks/libyaml/src/scanner.c
+- benchmarks/libyaml/klee/libyaml_klee_compat.c
+family: libyaml
+float: false
+harness: benchmarks/libyaml/klee/libyaml_scanner_harness.c
+include_dirs:
+- benchmarks/libyaml/include
+- benchmarks/libyaml/klee/gordian_build/include
+- benchmarks
+defines:
+- HAVE_CONFIG_H=1
+- YAML_DECLARE_STATIC=1
+cflags: []
+link_flags: []
+coverage_files:
+- benchmarks/libyaml/src/scanner.c
+entry_function: yaml_parser_scan
+libc: uclibc
+posix_runtime: true
+klee_args:
+- --only-output-states-covering-new
+external_calls: all
+symbolic_input_names: []
+notes: libyaml YAML parser. The harness feeds a symbolic 256-byte document to the
+  parser/scanner.

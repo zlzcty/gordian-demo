@@ -1,0 +1,26 @@
+name: lb_paraloop_lo_l2
+sources:
+- benchmarks/logic_bombs_src/loop/paraloop_lo_l2_klee.c
+- benchmarks/lib/utils.c
+- benchmarks/lib/sha1.c
+- benchmarks/lib/aes.c
+- benchmarks/lib/crypto_utils.c
+family: logic_bombs
+float: false
+harness: null
+include_dirs:
+- benchmarks/include
+- benchmarks
+defines: []
+cflags: []
+link_flags: []
+coverage_files:
+- benchmarks/logic_bombs_src/loop/paraloop_lo_l2_klee.c
+entry_function: logic_bomb
+libc: uclibc
+posix_runtime: true
+klee_args: []
+external_calls: all
+symbolic_input_names: []
+notes: LogicBombs benchmark, category loop. The bomb is reached when klee_assert(0)
+  / BOMB_ENDING is hit.

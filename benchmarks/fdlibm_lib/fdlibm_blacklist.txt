@@ -1,0 +1,16 @@
+# ============================
+# fdlibm Standalone Blacklist
+# ============================
+# These files must NOT be run as standalone KLEE benchmarks.
+# They are infrastructure, global state, or table-driven kernels
+# that require strong concrete invariants from callers.
+
+# ---- Global configuration / state ----
+s_lib_version.c     # Only defines global _LIB_VERSION
+s_signgam.c         # Only defines global signgam
+
+# ---- Error handling glue ----
+s_matherr.c         # Not numerical computation (but still callable if desired)
+
+# ---- Table-driven argument reduction kernel ----
+k_rem_pio2.c        # Low-level table kernel, invalid under unconstrained symbolic use

@@ -1,0 +1,42 @@
+name: jq_jv_unicode
+sources:
+- benchmarks/jq/src/jv.c
+- benchmarks/jq/src/jv_parse.c
+- benchmarks/jq/src/jv_dtoa.c
+- benchmarks/jq/src/jv_dtoa_tsd.c
+- benchmarks/jq/src/jv_alloc.c
+- benchmarks/jq/src/jv_unicode.c
+- benchmarks/jq/src/jv_aux.c
+- benchmarks/jq/src/jv_print.c
+- benchmarks/jq/src/util.c
+- benchmarks/jq/src/execute.c
+- benchmarks/jq/src/jv_file.c
+- benchmarks/jq/src/locfile.c
+- benchmarks/jq/src/linker.c
+- benchmarks/jq/src/parser.c
+- benchmarks/jq/src/lexer.c
+- benchmarks/jq/src/compile.c
+- benchmarks/jq/src/bytecode.c
+- benchmarks/jq/src/builtin.c
+family: jq
+float: false
+harness: benchmarks/jq_benchmarks/jq_klee_harness.c
+include_dirs:
+- benchmarks/jq
+- benchmarks/jq/src
+- benchmarks
+defines:
+- IEEE_8087
+- _POSIX_C_SOURCE=200809L
+cflags: []
+link_flags:
+- -lm
+coverage_files:
+- benchmarks/jq/src/jv_unicode.c
+entry_function: jv_parse
+libc: uclibc
+posix_runtime: true
+klee_args: []
+external_calls: all
+symbolic_input_names: []
+notes: jq JSON processor. The harness parses a symbolic JSON text with jv_parse.

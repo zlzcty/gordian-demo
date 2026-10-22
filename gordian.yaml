@@ -1,0 +1,15 @@
+mount_path: /gordian
+std:
+  name: gordian-klee
+  image: klee/klee:3.0                # or your tag, if you built docker/klee/Dockerfile
+float:
+  name: gordian-klee-float
+  image: gordian-klee-float:latest    # the tag given to docker build -f docker/klee-float/Dockerfile
+runs_dir: runs
+benchmarks_dir: benchmarks
+cache_dir: llm_cache
+solver_timeout_s: 20
+explore_solver_timeout_s: 2
+search: bfs
+replay_timeout_s: 30
+replay_max_tests: 0               # 0 = replay every test; N > 0 = evenly spaced sample of at most N tests per KLEE run

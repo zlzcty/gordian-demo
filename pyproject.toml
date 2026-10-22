@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gordian"
+version = "2.0.0"
+description = "Gordian: LLM-generated ghost code for KLEE symbolic execution"
+requires-python = ">=3.10"
+dependencies = ["pyyaml>=6", "anthropic>=0.40", "openai>=1.50", "z3-solver>=4.12"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+gordian = "gordian.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["gordian*"]

@@ -1,0 +1,25 @@
+name: libexpat_xmlrole
+sources:
+- benchmarks/libexpat/expat/lib/xmlparse.c
+- benchmarks/libexpat/expat/lib/xmltok.c
+- benchmarks/libexpat/expat/lib/xmlrole.c
+family: libexpat
+float: false
+harness: benchmarks/libexpat_benchmarks/xml_klee_harness.c
+include_dirs:
+- benchmarks/libexpat/expat/lib
+- benchmarks/libexpat
+- benchmarks/libexpat/build
+- benchmarks
+defines: []
+cflags: []
+link_flags: []
+coverage_files:
+- benchmarks/libexpat/expat/lib/xmlrole.c
+entry_function: XML_Parse
+libc: uclibc
+posix_runtime: true
+klee_args: []
+external_calls: all
+symbolic_input_names: []
+notes: libexpat XML parser. The harness feeds a symbolic buffer to XML_Parse.

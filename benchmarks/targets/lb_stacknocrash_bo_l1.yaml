@@ -1,0 +1,26 @@
+name: lb_stacknocrash_bo_l1
+sources:
+- benchmarks/logic_bombs_src/buffer_overflow/stacknocrash_bo_l1_klee.c
+- benchmarks/lib/utils.c
+- benchmarks/lib/sha1.c
+- benchmarks/lib/aes.c
+- benchmarks/lib/crypto_utils.c
+family: logic_bombs
+float: false
+harness: null
+include_dirs:
+- benchmarks/include
+- benchmarks
+defines: []
+cflags: []
+link_flags: []
+coverage_files:
+- benchmarks/logic_bombs_src/buffer_overflow/stacknocrash_bo_l1_klee.c
+entry_function: logic_bomb
+libc: uclibc
+posix_runtime: true
+klee_args: []
+external_calls: all
+symbolic_input_names: []
+notes: LogicBombs benchmark, category buffer_overflow. The bomb is reached when klee_assert(0)
+  / BOMB_ENDING is hit.
