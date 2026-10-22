@@ -5,8 +5,9 @@ Implement on `demo/trig-klee-gordian`, with a commit for each feature.
 1. Add a reduced teaching example derived from FDLibM's `j0` trigonometric
    guard. Restrict the input to positive binary64 values in [2, 6]. Keep the
    driver separate from the replaceable guard and print branch outcomes only
-   during native replay. External libm is intentional; this is not the full
-   FDLibM benchmark or the paper's evaluation.
+   during native replay. Link the actual FDLibM sine/cosine implementations
+   and their dependency closure into KLEE and native replay; this is not the
+   full Bessel function benchmark or the paper's evaluation.
 2. Add a small OpenAI-compatible endpoint adapter using Gordian's existing
    backend, prompt/file protocol, and response logs. Endpoint, model, key
    environment variable, timeout, and retries must be explicit arguments.
@@ -30,3 +31,9 @@ limitation rather than claiming a successful rehearsal.
 Implementation: example, endpoint boundary, focused runner, contract tests,
 and presenter guide are authored. See `DEMO.md` at the repository root.
 Runtime validation remains intentionally outstanding.
+
+Follow-up: replaced the initial external-libm simplification with the actual
+ten-source FDLibM dependency closure. Each run preserves one source snapshot
+for both builds, with hashes, explicit little-endian/aliasing flags, and
+namespaced symbols. External math fallback is disabled. Contract tests and
+the guide were updated; builds and execution remain prohibited.

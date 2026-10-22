@@ -29,13 +29,40 @@ returns 1 or 2 to identify the branch. It removes the Bessel calculations
 that do not affect this predicate. The original FDLibM copyright notice is
 preserved in `demos/trig/guard.inc`.
 
-**This reduction calls external system libm `sin`/`cos`. It does not link
-the FDLibM implementations of those functions.** Standard KLEE normally
-concretizes symbolic floating-point/external-call operands, so it may
-explore only one sign outcome. This demonstrates that limitation and
-Gordian's surrogate technique; it does not establish that a floating-point
-SMT solver cannot solve the full FDLibM example. This is a difficult branch,
-not an actual malicious logic bomb or a reproduction of the paper's results.
+**This reduction links the actual FDLibM `sin`/`cos` implementations into
+the LLVM bitcode and the native replay executable.** KLEE enters the
+functions and their helpers, encountering their masks, shifts, branches,
+argument reduction, and polynomial arithmetic. Standard KLEE may concretize
+values at symbolic floating-point operations; entering a function does not
+mean all its operations remain symbolic. This demonstrates that limitation
+and Gordian's surrogate technique. This is a numerical branch, not an actual
+malicious logic bomb or a reproduction of the paper's full evaluation.
+
+Each run snapshots these repository files from `benchmarks/fdlibm_lib/`,
+plus `fdlibm.h`, into its own `fdlibm/` directory:
+
+| Sources | Purpose |
+| --- | --- |
+| `s_sin.c`, `s_cos.c` | Public sine and cosine implementations |
+| `k_sin.c`, `k_cos.c` | Polynomial kernels |
+| `e_rem_pio2.c`, `k_rem_pio2.c` | Argument reduction |
+| `s_fabs.c`, `s_floor.c`, `s_scalbn.c`, `s_copysign.c` | Helpers used by the dependency chain |
+
+The baseline, assisted build, and native replay all use the same snapshot.
+Its manifest records file hashes and compilation flags. The assisted guard
+can avoid calling those functions; they remain linked and unmodified.
+
+Compilation renames the ten FDLibM functions to `gordian_fdlibm_*`, so they
+cannot accidentally bind to system libm. The driver declares `sin`/`cos`
+directly instead of including system `math.h`, avoiding conflicts between
+renaming and system SIMD declarations. `-fno-builtin` prevents compiler math
+substitution, `-fno-strict-aliasing` supports FDLibM's historical word macros,
+`-D__LITTLE_ENDIAN` selects their correct word order, and
+`-ffp-contract=off` prevents fused-operation differences between builds.
+The native build does not link `-lm`, and KLEE uses `--external-calls=none`;
+an omitted math implementation must fail instead of silently falling back
+to a native external call. KLEE intrinsics and its modeled runtime operations
+remain available.
 
 An expert's solution is simple:
 
@@ -157,8 +184,8 @@ baseline-only run. Omit `--pause` for unattended rehearsal.
 1. **Read the guard.** Ask the audience for inputs producing both signs.
    Explain the human identity and the distinction between mathematical
    functions and the operations supported by the execution engine.
-2. **Run baseline KLEE.** Show the printed concretization/external-call
-   warnings and the concrete original-code replay observations. Identify
+2. **Run baseline KLEE.** Show the printed FDLibM source list,
+   concretization diagnostics, and concrete original-code replay observations. Identify
    which outcome is missing. A crash or build failure is not a successful
    demonstration of solver difficulty.
 3. **Show the model request.** Open `llm/prompt.md`. The fixed input domain,
@@ -173,7 +200,7 @@ baseline-only run. Omit `--pause` for unattended rehearsal.
    reasoning or token-by-token output.
 5. **Watch assisted KLEE and original replay.** KLEE runs the surrogate.
    Each checked candidate is then executed through the separately compiled
-   original guard, with external native libm. Show the recorded input value,
+   original guard, with the same linked FDLibM implementation. Show the recorded input value,
    raw bytes, branch outcome, and corresponding `.ktest` file.
 6. **Read the result.** An `improved` result requires both outcomes across
    the original replay observations, with at least one missing from baseline.
@@ -220,6 +247,9 @@ runs/trig-live/
   result.json                 settings, status, timings, usage, witnesses
   original/driver.c            fixed input/replay driver
   original/guard.inc           original reduced guard
+  fdlibm/*.c                  ten original FDLibM implementation/helper files
+  fdlibm/fdlibm.h              original FDLibM header
+  fdlibm/manifest.json         exact source hashes and shared compilation flags
   native/original-replay      native executable of that original computation
   native/build.log
   baseline/klee.klee.log       actual KLEE command and captured output
@@ -237,7 +267,7 @@ runs/trig-live/
 ```
 
 No final cleanup removes these artifacts. The native executable always
-uses the original guard snapshot, including for assisted candidates.
+uses the original guard and FDLibM snapshots, including for assisted candidates.
 
 ## Rehearsal and troubleshooting
 
@@ -250,6 +280,8 @@ pytest -q tests/test_trig_demo.py
 They use fake endpoint/container boundaries and do not require Docker or
 provider access. They check input/replay contracts, response parsing, API
 configuration, artifact visibility, success accounting, and error retention.
+They also check FDLibM source preservation, consistent compile/link inputs,
+symbol renaming, and the absence of external math fallback.
 They do not replace an actual KLEE/model rehearsal.
 
 - **Container rejected:** check its name, running state, mount, and tools.
@@ -266,6 +298,8 @@ They do not replace an actual KLEE/model rehearsal.
   Invalid interfaces, failed replays, and inputs outside [2, 6] are rejected.
 - **Baseline succeeds:** retain that result honestly. Rehearse on the intended
   backend; do not manufacture a missed branch or describe this run as improvement.
+  Linked FDLibM introduces internal integer branches that may help KLEE find
+  both sign outcomes even if a version with external trigonometric calls did not.
 
 For a short talk, prepare a recording of an actual successful rehearsal and
 keep its artifacts. If the live endpoint fails, show that recording and label
