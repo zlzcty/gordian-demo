@@ -207,6 +207,7 @@ may reject a request, take too long, or return unsuitable code.
 | `incomplete` | The checked candidate inputs do not establish both outcomes. Exit code 1. |
 | `baseline_only` | Baseline-only run completed; inspect its witnesses. |
 | `error` | A prerequisite, build, endpoint, response contract, or execution step failed. Exit code 1. |
+| `interrupted` | The presenter interrupted a running demo. Exit code 130. |
 
 The replay cap is printed and recorded. Unchecked tests are retained, but
 cannot count as evidence. Reachability is observed per branch using native

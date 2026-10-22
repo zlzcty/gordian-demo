@@ -48,6 +48,9 @@ def explore_variant(container: Container, root: Path, driver: Path, directory: P
     emit("KLEE DIAGNOSTICS\n" + ("\n".join(result.warnings) or "No captured warnings."))
     emit(f"KLEE: {len(result.ktests)} tests, {len(result.errors)} errors, "
          f"{result.seconds:.1f}s, exit={result.returncode}")
+    if result.returncode not in (0, 124, 130, 137):
+        raise RuntimeError(f"KLEE failed with exit {result.returncode}; "
+                           f"inspect {directory / 'klee.klee.log'}")
     if not result.ktests:
         raise RuntimeError(f"KLEE produced no tests; inspect {directory / 'klee.klee.log'}")
     return dict(ktests=result.ktests, diagnostics="\n".join(result.warnings),
@@ -87,11 +90,11 @@ def replay_test(container: Container, executable: Path, ktest: Path,
         raise ValueError(f"native replay failed with exit {result.returncode}")
     outcome = replay_outcome(result.stdout, value)
     return dict(test=str(ktest), replay_test=str(normalized), x=value,
-                input_hex=structural_input_hex(objects), outcome=outcome)
+                input_hex=input_bytes(objects).hex(), outcome=outcome)
 
 
-def structural_input_hex(objects: list[dict]) -> str:
-    return next(obj["bytes"].hex() for obj in objects if obj["name"] == "a0")
+def input_bytes(objects: list[dict]) -> bytes:
+    return next(obj["bytes"] for obj in objects if obj["name"] == "a0")
 
 
 def replay_tests(container: Container, executable: Path, ktests: list[Path],

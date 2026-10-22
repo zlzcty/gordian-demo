@@ -30,6 +30,8 @@ def observe_variant(container, root: Path, driver: Path, directory: Path,
     observations = replay_tests(container, executable, exploration["ktests"],
                                 directory / "replay", options["replay_seconds"],
                                 options["max_tests"], emit)
+    if not branch_witnesses(observations):
+        raise RuntimeError(f"no valid original-code replay observations; inspect {directory / 'replay'}")
     return {**exploration, "observations": observations}
 
 
@@ -90,6 +92,9 @@ def run_demo(container, root: Path, directory: Path, driver: str, guard: str,
         emit(json.dumps({key: report[key] for key in (
             "status", "baseline_witnesses", "assisted_witnesses", "combined_witnesses")}, indent=2))
         return report
+    except KeyboardInterrupt:
+        report.update(status="interrupted")
+        raise
     except Exception as exc:
         report.update(status="error", error=str(exc))
         raise

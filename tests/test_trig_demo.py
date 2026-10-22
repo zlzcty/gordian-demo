@@ -126,6 +126,9 @@ def test_replay_uses_fixed_original_executable_and_rejects_wrong_input(tmp_path)
     assert row["outcome"] == 2
     assert commands[0][-1] == str(tmp_path / "original-replay")
     assert input_value(read_ktest(replay_dir / ktest.name)) == 4
+    write_ktest(ktest, objects(2))
+    with pytest.raises(ValueError, match="input or branch"):
+        replay_test(container, tmp_path / "original-replay", ktest, replay_dir, 2)
 
 
 def test_workflow_does_not_call_model_when_baseline_succeeds(tmp_path, monkeypatch):
@@ -157,3 +160,28 @@ def test_workflow_keeps_error_report_and_refuses_overwrite(tmp_path, monkeypatch
     assert json.loads((directory / "result.json").read_text())["status"] == "error"
     with pytest.raises(FileExistsError):
         workflow.run_demo(None, tmp_path, directory, "driver", "guard", {}, None, lambda _: None)
+
+
+def test_workflow_records_interruptions(tmp_path, monkeypatch):
+    def interrupt(_):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(workflow, "require_prepared_container", interrupt)
+    directory = tmp_path / "run"
+    with pytest.raises(KeyboardInterrupt):
+        workflow.run_demo(None, tmp_path, directory, "driver", "guard", {}, None, lambda _: None)
+    assert json.loads((directory / "result.json").read_text())["status"] == "interrupted"
+
+
+def test_workflow_requires_original_replay_evidence_for_improvement(tmp_path, monkeypatch):
+    container = SimpleNamespace(tools=SimpleNamespace(klee_version="fake"))
+    monkeypatch.setattr(workflow, "require_prepared_container", lambda _: None)
+    monkeypatch.setattr(workflow, "build_original_replay", lambda *args: tmp_path / "original")
+    monkeypatch.setattr(workflow, "observe_variant", lambda *args: dict(
+        observations=[dict(x=2, outcome=1)], diagnostics="concretizing"))
+    monkeypatch.setattr(workflow, "assist", lambda *args: (
+        dict(observations=[dict(x=4, outcome=2)]), dict(model="fake")))
+    report = workflow.run_demo(container, tmp_path, tmp_path / "run", "driver", "guard",
+                               dict(baseline_only=False), None, lambda _: None)
+    assert report["status"] == "improved"
+    assert report["combined_witnesses"]["2"]["x"] == 4
