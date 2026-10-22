@@ -7,7 +7,9 @@ import pytest
 
 from gordian.demo.example import (comparison, input_value, replay_outcome,
                                   surrogate_from_response)
-from gordian.demo.execution import replay_test, require_prepared_container
+from gordian.demo.execution import (build_original_replay, replay_test,
+                                    require_prepared_container, variant_target)
+from gordian.demo.fdlibm import SOURCES, SYMBOLS, compile_flags, snapshot_sources, source_paths
 from gordian.demo.model import api_key, endpoint_config, request_rewrite
 from gordian.demo import workflow
 from gordian.ktest import read_ktest, write_ktest
@@ -187,3 +189,50 @@ def test_workflow_requires_original_replay_evidence_for_improvement(tmp_path, mo
                                dict(baseline_only=False), None, lambda _: None)
     assert report["status"] == "improved"
     assert report["combined_witnesses"]["2"]["x"] == 4
+
+
+def test_fdlibm_snapshot_preserves_exact_sources_and_records_hashes(tmp_path):
+    source, destination = tmp_path / "source", tmp_path / "snapshot"
+    source.mkdir()
+    for name in (*SOURCES, "fdlibm.h"):
+        (source / name).write_bytes(b"/* original notice */\r\n")
+    manifest = snapshot_sources(source, destination)
+    for name in (*SOURCES, "fdlibm.h"):
+        assert (destination / name).read_bytes() == (source / name).read_bytes()
+        assert len(manifest["sha256"][name]) == 64
+    (source / "s_sin.c").write_text("changed after snapshot")
+    assert (destination / "s_sin.c").read_bytes() == b"/* original notice */\r\n"
+    assert json.loads((destination / "manifest.json").read_text()) == manifest
+
+
+def test_klee_target_links_fdlibm_and_disallows_external_fallback(tmp_path):
+    library, driver = tmp_path / "fdlibm", tmp_path / "original/driver.c"
+    target = variant_target(tmp_path, driver, library)
+    assert target.sources == ["original/driver.c"] + [f"fdlibm/{name}" for name in SOURCES]
+    assert target.include_dirs == ["fdlibm"]
+    assert target.external_calls == "none"
+    assert "-lm" not in target.link_flags
+    assert "-D__LITTLE_ENDIAN" in target.cflags
+    assert "-fno-strict-aliasing" in target.cflags
+    assert "-ffp-contract=off" in target.cflags
+    for symbol in SYMBOLS:
+        assert f"-D{symbol}=gordian_fdlibm_{symbol}" in target.cflags
+
+
+def test_native_build_links_the_same_fdlibm_snapshot_as_klee(tmp_path):
+    commands = []
+
+    def execute(command, **kwargs):
+        commands.append(command)
+        return SimpleNamespace(returncode=0, stdout="", stderr="")
+
+    container = SimpleNamespace(path=str, exec=execute, tools=SimpleNamespace(
+        clang="clang", klee_include="/include", klee_runtest_lib="/lib"))
+    library, driver = tmp_path / "fdlibm", tmp_path / "original/driver.c"
+    build_original_replay(container, driver, tmp_path / "native", library)
+    command = commands[0]
+    assert str(driver) in command
+    assert all(str(path) in command for path in source_paths(library))
+    assert all(flag in command for flag in compile_flags())
+    assert "-lm" not in command
+    assert "-lkleeRuntest" in command
