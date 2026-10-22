@@ -39,6 +39,13 @@ def parser() -> argparse.ArgumentParser:
     return result
 
 
+def wait_for_enter(prompt: str) -> None:
+    try:
+        input(prompt)
+    except EOFError:
+        raise ValueError("--pause needs interactive stdin; omit it for unattended runs") from None
+
+
 def run_from_args(args, environment: dict[str, str], emit, pause) -> int:
     settings = load_settings(args.root)
     root = settings.project_root.resolve()
@@ -73,7 +80,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
     configure("INFO")
     try:
-        return run_from_args(args, dict(os.environ), lambda text: print(text, flush=True), input)
+        return run_from_args(args, dict(os.environ), lambda text: print(text, flush=True), wait_for_enter)
     except (ValueError, RuntimeError, OSError) as exc:
         print(f"Demo stopped: {exc}", file=sys.stderr)
         return 1

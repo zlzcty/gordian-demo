@@ -14,7 +14,7 @@ from .example import input_value, replay_outcome
 
 
 def require_prepared_container(container: Container) -> None:
-    """Inspect only: never call up/ensure_running or implicitly pull an image."""
+    """Check the existing mount and probe tools without starting/pulling containers."""
     if not container.running() or not container.mount_ok():
         raise RuntimeError(
             f"{container.spec.name} must already be running with this repository mounted "
