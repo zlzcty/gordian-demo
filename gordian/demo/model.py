@@ -39,8 +39,10 @@ def make_client(base_url: str, key: str, timeout_s: float):
 def rewrite_prompt(original: str, diagnostics: str, missing: list[int]) -> str:
     return f"""You are Gordian's surrogate-rewriting stage in a small teaching demo.
 KLEE left these branch outcomes unreached on original-code replay: {missing}.
-This is a reduced FDLibM j0 guard, using external sin/cos. Standard KLEE
-concretizes symbolic floating-point operations/external calls. A human can
+This is a reduced FDLibM j0 guard with the actual FDLibM sin/cos, kernels,
+argument reduction and supporting functions linked into the LLVM bitcode.
+KLEE enters those implementations, including their masks, shifts and branches;
+standard KLEE may concretize values at symbolic floating-point operations. A human can
 reason using sin(x)*cos(x) = sin(2*x)/2. Work out suitable sign intervals.
 
 Fixed driver: one symbolic positive IEEE-754 binary64 double named a0,
@@ -49,7 +51,7 @@ The driver, input names, bounds, and native replay program cannot be changed.
 
 Return a solver-friendly replacement for ONLY guard.inc: one static function
 `static int trig_branch(double x)`. Headers already available are stdint.h,
-string.h, math.h and klee/klee.h. Use memcpy into uint64_t and unsigned integer
+string.h and klee/klee.h. Use memcpy into uint64_t and unsigned integer
 comparisons to decide branch outcomes; do not use symbolic floating-point
 arithmetic/comparisons, sin/cos calls, new symbolic objects, I/O, main, extra
 includes, or external helpers. Return 1 for a negative product, 2 otherwise.

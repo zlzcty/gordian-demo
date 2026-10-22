@@ -134,6 +134,7 @@ def test_replay_uses_fixed_original_executable_and_rejects_wrong_input(tmp_path)
 def test_workflow_does_not_call_model_when_baseline_succeeds(tmp_path, monkeypatch):
     container = SimpleNamespace(tools=SimpleNamespace(klee_version="fake"))
     monkeypatch.setattr(workflow, "require_prepared_container", lambda _: None)
+    monkeypatch.setattr(workflow, "snapshot_sources", lambda *args: dict(sources=[]))
     monkeypatch.setattr(workflow, "build_original_replay", lambda *args: tmp_path / "original")
     monkeypatch.setattr(workflow, "observe_variant", lambda *args: dict(
         observations=[dict(x=2, outcome=1), dict(x=4, outcome=2)]))
@@ -176,6 +177,7 @@ def test_workflow_records_interruptions(tmp_path, monkeypatch):
 def test_workflow_requires_original_replay_evidence_for_improvement(tmp_path, monkeypatch):
     container = SimpleNamespace(tools=SimpleNamespace(klee_version="fake"))
     monkeypatch.setattr(workflow, "require_prepared_container", lambda _: None)
+    monkeypatch.setattr(workflow, "snapshot_sources", lambda *args: dict(sources=[]))
     monkeypatch.setattr(workflow, "build_original_replay", lambda *args: tmp_path / "original")
     monkeypatch.setattr(workflow, "observe_variant", lambda *args: dict(
         observations=[dict(x=2, outcome=1)], diagnostics="concretizing"))

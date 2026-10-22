@@ -1,10 +1,14 @@
 /* Fixed input/replay interface. Only guard.inc is replaceable by the LLM. */
 #include <klee/klee.h>
-#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <float.h>
+
+/* Compile flags bind these declarations to the bundled FDLibM definitions.
+ * Avoid system math.h so its SIMD declarations do not interfere with renaming. */
+double sin(double);
+double cos(double);
 
 _Static_assert(sizeof(double) == sizeof(uint64_t), "binary64 required");
 _Static_assert(DBL_MANT_DIG == 53 && DBL_MAX_EXP == 1024, "IEEE-754 binary64 required");

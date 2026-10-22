@@ -22,7 +22,7 @@ def positive_int(value: str) -> int:
 
 
 def parser() -> argparse.ArgumentParser:
-    result = argparse.ArgumentParser(description="One-example KLEE / Gordian trig demo (external libm)")
+    result = argparse.ArgumentParser(description="One-example KLEE / Gordian trig demo (linked FDLibM)")
     result.add_argument("--root", type=Path, help="repository root containing gordian.yaml")
     result.add_argument("--provider", choices=("openrouter", "deepinfra", "custom"), default="openrouter")
     result.add_argument("--base-url", help="OpenAI-compatible API base, including its v1 path")

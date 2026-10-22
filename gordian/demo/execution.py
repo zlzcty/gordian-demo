@@ -11,6 +11,7 @@ from ..klee import compile_bitcode, run_klee
 from ..ktest import read_ktest, write_ktest
 from ..targets import Target
 from .example import input_value, replay_outcome
+from .fdlibm import compile_flags, source_paths
 
 
 def require_prepared_container(container: Container) -> None:
@@ -29,16 +30,19 @@ def prepare_variant(directory: Path, driver: str, guard: str) -> Path:
     return directory / "driver.c"
 
 
-def variant_target(root: Path, driver: Path) -> Target:
+def variant_target(root: Path, driver: Path, library: Path) -> Target:
     relative = str(driver.relative_to(root))
-    return Target(name="demo_trig", sources=[relative], coverage_files=[relative],
-                  family="demo", libc="none", posix_runtime=False, external_calls="all",
-                  cflags=["-std=c11", "-fno-builtin"], link_flags=["-lm"])
+    sources = [relative] + [str(path.relative_to(root)) for path in source_paths(library)]
+    return Target(name="demo_trig", sources=sources, coverage_files=[relative],
+                  include_dirs=[str(library.relative_to(root))],
+                  family="demo", libc="none", posix_runtime=False, external_calls="none",
+                  cflags=compile_flags())
 
 
 def explore_variant(container: Container, root: Path, driver: Path, directory: Path,
-                    budget_s: int, solver_timeout_s: int, emit: Callable[[str], None]) -> dict:
-    target = variant_target(root, driver)
+                    library: Path, budget_s: int, solver_timeout_s: int,
+                    emit: Callable[[str], None]) -> dict:
+    target = variant_target(root, driver, library)
     build = compile_bitcode(container, target, root, directory / "build")
     if not build.ok:
         raise RuntimeError(f"bitcode compilation failed; see {directory / 'build/build.log'}")
@@ -58,15 +62,16 @@ def explore_variant(container: Container, root: Path, driver: Path, directory: P
                 errors=[str(path) for path in result.errors], stats=result.stats)
 
 
-def build_original_replay(container: Container, driver: Path, directory: Path) -> Path:
+def build_original_replay(container: Container, driver: Path, directory: Path, library: Path) -> Path:
     """Compile the fixed original driver/guard, without Gordian's assertion softening."""
     directory.mkdir(parents=True, exist_ok=True)
     executable = directory / "original-replay"
     tools = container.tools
-    command = [tools.clang, "-std=c11", "-O0", "-fno-builtin", "-DDEMO_REPLAY",
-               "-I" + tools.klee_include, container.path(driver),
+    command = [tools.clang, *compile_flags(), "-O0", "-DDEMO_REPLAY",
+               "-I" + tools.klee_include, "-I" + container.path(library),
+               container.path(driver), *[container.path(path) for path in source_paths(library)],
                "-L" + tools.klee_runtest_lib, "-Wl,-rpath," + tools.klee_runtest_lib,
-               "-lkleeRuntest", "-lm", "-o", container.path(executable)]
+               "-lkleeRuntest", "-o", container.path(executable)]
     result = container.exec(command, timeout=60)
     (directory / "build.log").write_text(result.stdout + result.stderr)
     if result.returncode:

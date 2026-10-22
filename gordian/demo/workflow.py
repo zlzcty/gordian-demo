@@ -10,6 +10,7 @@ from .example import branch_witnesses, comparison, source_diff, surrogate_from_r
 from .execution import (build_original_replay, explore_variant, prepare_variant,
                         replay_tests, require_prepared_container)
 from .model import request_rewrite, rewrite_prompt
+from .fdlibm import snapshot_sources
 
 
 def save_report(directory: Path, report: dict) -> None:
@@ -24,8 +25,9 @@ def show_step(title: str, emit: Callable[[str], None],
 
 
 def observe_variant(container, root: Path, driver: Path, directory: Path,
-                    executable: Path, options: dict, emit: Callable[[str], None]) -> dict:
-    exploration = explore_variant(container, root, driver, directory,
+                    executable: Path, library: Path, options: dict,
+                    emit: Callable[[str], None]) -> dict:
+    exploration = explore_variant(container, root, driver, directory, library,
                                   options["klee_seconds"], options["solver_seconds"], emit)
     observations = replay_tests(container, executable, exploration["ktests"],
                                 directory / "replay", options["replay_seconds"],
@@ -36,7 +38,7 @@ def observe_variant(container, root: Path, driver: Path, directory: Path,
 
 
 def assist(container, root: Path, directory: Path, driver: str, guard: str,
-           executable: Path, baseline: dict, options: dict, client,
+           executable: Path, library: Path, baseline: dict, options: dict, client,
            emit: Callable[[str], None], pause: Callable[[str], None] | None) -> tuple[dict, dict]:
     missing = [outcome for outcome in (1, 2)
                if str(outcome) not in branch_witnesses(baseline["observations"])]
@@ -55,7 +57,7 @@ def assist(container, root: Path, directory: Path, driver: str, guard: str,
     emit("MODEL EXPLANATION\n" + notes)
     show_step("4/5 KLEE on the surrogate; replay candidates on the ORIGINAL guard", emit, pause)
     assisted = observe_variant(container, root, generated_driver, directory / "assisted",
-                               executable, options, emit)
+                               executable, library, options, emit)
     return assisted, usage
 
 
@@ -65,17 +67,20 @@ def run_demo(container, root: Path, directory: Path, driver: str, guard: str,
     """Never overwrite a run; preserve partial evidence if any step fails."""
     directory.mkdir(parents=True, exist_ok=False)
     started = time.monotonic()
-    report = dict(status="running", options=options, scope="reduced guard with external libm")
+    report = dict(status="running", options=options, scope="reduced guard with linked FDLibM")
     save_report(directory, report)
     try:
         require_prepared_container(container)
         report["klee_version"] = container.tools.klee_version
+        library = directory / "fdlibm"
+        report["fdlibm"] = snapshot_sources(root / "benchmarks/fdlibm_lib", library)
+        emit("LINKED FDLIBM SOURCES\n" + "\n".join(report["fdlibm"]["sources"]))
         original_driver = prepare_variant(directory / "original", driver, guard)
-        executable = build_original_replay(container, original_driver, directory / "native")
+        executable = build_original_replay(container, original_driver, directory / "native", library)
         show_step("1/5 Baseline KLEE on the original reduced guard", emit, pause)
         emit("ORIGINAL GUARD\n" + guard)
         report["baseline"] = observe_variant(container, root, original_driver,
-                                             directory / "baseline", executable, options, emit)
+                                             directory / "baseline", executable, library, options, emit)
         baseline = report["baseline"]["observations"]
         report.update(comparison(baseline, []))
         save_report(directory, report)
@@ -85,7 +90,7 @@ def run_demo(container, root: Path, directory: Path, driver: str, guard: str,
             report["status"] = "baseline_only"
         else:
             report["assisted"], report["llm_usage"] = assist(
-                container, root, directory, driver, guard, executable,
+                container, root, directory, driver, guard, executable, library,
                 report["baseline"], options, client, emit, pause)
             report.update(comparison(baseline, report["assisted"]["observations"]))
         show_step("5/5 Original-code evidence", emit, None)

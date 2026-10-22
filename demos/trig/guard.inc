@@ -6,7 +6,7 @@
  *
  * Teaching adaptation: retain the branch predicates, remove Bessel output
  * calculations, and return distinct outcomes. Use memcpy for bit access.
- * sin/cos are external libm calls, not linked FDLibM implementations.
+ * sin/cos use the linked FDLibM implementations and argument-reduction helpers.
  */
 static int trig_branch(double x)
 {
