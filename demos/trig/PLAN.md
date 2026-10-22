@@ -26,3 +26,7 @@ Validation constraint: the user has prohibited builds, benchmark execution,
 model calls, and container pulls during implementation. Author tests and
 review source/diffs, but do not execute tests or the demo. Document this
 limitation rather than claiming a successful rehearsal.
+
+Implementation: example, endpoint boundary, focused runner, contract tests,
+and presenter guide are authored. See `DEMO.md` at the repository root.
+Runtime validation remains intentionally outstanding.
