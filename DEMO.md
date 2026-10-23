@@ -5,10 +5,10 @@ It shows baseline KLEE, its diagnostics, the model's complete response, the
 generated code diff, KLEE on that code, and concrete inputs replayed through
 the original computation. It does not run the benchmark suite.
 
-**Implementation status:** authored and statically reviewed only. No demo,
-tests, compilation, endpoint request, or container operation was executed
-during implementation, as requested. Rehearse before presenting; successful
-runtime behavior and duration have not been established.
+**Rehearsal record and presenter notes:** see [DEMO-NOTES.md](DEMO-NOTES.md)
+for the executed checks, results, setup requirements, and a credential-free
+rehearsal using an explicitly labeled mock model response. Real provider
+credentials and a live model are separate production requirements.
 
 ## What the example demonstrates
 
@@ -98,6 +98,10 @@ python3 -m venv .venv
 pip install -e '.[dev]'
 ```
 
+If this workspace mount prohibits virtual-environment symlinks, put the
+environment on a Linux filesystem outside the mount. Tested `uv` commands
+for that arrangement are in [DEMO-NOTES.md](DEMO-NOTES.md).
+
 The image must **already be available locally**. The demo never downloads,
 creates, starts, or recreates a container. If you need to create the
 standard container yourself, this preparation command refuses image pulls:
@@ -178,6 +182,13 @@ python -m gordian.demo --baseline-only --name trig-baseline
 Every name must be new; the runner refuses to overwrite an earlier run.
 A later full invocation performs a fresh baseline; it does not resume the
 baseline-only run. Omit `--pause` for unattended rehearsal.
+
+For a local mock-model rehearsal, start `python demos/trig/mock_endpoint.py`
+in another terminal and use `--provider custom`,
+`--base-url http://127.0.0.1:8047/v1`, `--model rehearsal-mock`, and a named
+environment variable containing a dummy key. Full commands are in the note
+sheet. The prewritten response is labeled MOCK throughout; compilation,
+KLEE input generation, and original FDLibM replay still execute normally.
 
 ## Presenter script
 
@@ -293,7 +304,8 @@ They do not replace an actual KLEE/model rehearsal.
   under the failing variant. Do not describe a broken setup as a solver failure.
 - **Malformed response or compilation failure:** inspect `llm/response.md`
   and the generated diff. Try a suitable coding model in a fresh run. The demo
-  does not silently substitute a canned solution.
+  does not silently substitute a canned solution. The separate, explicit
+  mock endpoint is only a rehearsal fixture.
 - **`incomplete`:** inspect actual original replay logs and model restrictions.
   Invalid interfaces, failed replays, and inputs outside [2, 6] are rejected.
 - **Baseline succeeds:** retain that result honestly. Rehearse on the intended
@@ -303,5 +315,6 @@ They do not replace an actual KLEE/model rehearsal.
 
 For a short talk, prepare a recording of an actual successful rehearsal and
 keep its artifacts. If the live endpoint fails, show that recording and label
-it as recorded. The runner has no canned response or fake-success mode.
+it as recorded. The runner has no fake-success mode; using the local mock
+endpoint does not bypass KLEE or original-code replay.
 If you edit model code by hand, label the run as a manual intervention.

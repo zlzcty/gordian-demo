@@ -30,10 +30,12 @@ limitation rather than claiming a successful rehearsal.
 
 Implementation: example, endpoint boundary, focused runner, contract tests,
 and presenter guide are authored. See `DEMO.md` at the repository root.
-Runtime validation remains intentionally outstanding.
+Runtime validation was deferred during the original implementation. The
+user subsequently authorized execution; see `DEMO-NOTES.md` for its record.
 
 Follow-up: replaced the initial external-libm simplification with the actual
 ten-source FDLibM dependency closure. Each run preserves one source snapshot
 for both builds, with hashes, explicit little-endian/aliasing flags, and
 namespaced symbols. External math fallback is disabled. Contract tests and
-the guide were updated; builds and execution remain prohibited.
+the guide were updated. Execution was subsequently authorized, and a labeled
+local mock endpoint was added at the user's request for credential-free rehearsal.
