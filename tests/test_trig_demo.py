@@ -1,6 +1,8 @@
 """Demo contracts with fake network/container boundaries; no Docker or model calls."""
 import json
+import io
 import struct
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
@@ -13,6 +15,7 @@ from gordian.demo.fdlibm import SOURCES, SYMBOLS, compile_flags, snapshot_source
 from gordian.demo.model import api_key, endpoint_config, request_rewrite
 from gordian.demo import workflow
 from gordian.ktest import read_ktest, write_ktest
+from demos.trig.mock_endpoint import completion_app
 
 
 def objects(value):
@@ -236,3 +239,27 @@ def test_native_build_links_the_same_fdlibm_snapshot_as_klee(tmp_path):
     assert all(flag in command for flag in compile_flags())
     assert "-lm" not in command
     assert "-lkleeRuntest" in command
+
+
+def test_mock_endpoint_is_labeled_and_returns_the_actual_file_protocol():
+    fixture = Path(__file__).resolve().parents[1] / "demos/trig/mock-response.md"
+    body = json.dumps(dict(model="rehearsal-mock", messages=[])).encode()
+    statuses = []
+    result = completion_app(fixture.read_text())(dict(
+        REQUEST_METHOD="POST", PATH_INFO="/v1/chat/completions", CONTENT_LENGTH=str(len(body)),
+        **{"wsgi.input": io.BytesIO(body)}), lambda status, headers: statuses.append(status))
+    completion = json.loads(b"".join(result))
+    text = completion["choices"][0]["message"]["content"]
+    assert statuses == ["200 OK"]
+    assert completion["model"] == "rehearsal-mock"
+    assert "MOCK REHEARSAL" in text
+    assert "trig_branch" in surrogate_from_response(text)[0]
+
+
+def test_mock_endpoint_rejects_production_model_ids():
+    body = json.dumps(dict(model="a-real-model")).encode()
+    statuses = []
+    completion_app("fixture")(dict(
+        REQUEST_METHOD="POST", PATH_INFO="/v1/chat/completions", CONTENT_LENGTH=str(len(body)),
+        **{"wsgi.input": io.BytesIO(body)}), lambda status, headers: statuses.append(status))
+    assert statuses == ["400 Bad Request"]
