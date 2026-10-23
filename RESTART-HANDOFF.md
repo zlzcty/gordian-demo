@@ -1,3 +1,14 @@
+# Completed rehearsal update — 2026-10-22
+
+The user resumed execution. The Docker filesystem is now 30 GiB; the official
+image pulled successfully and the full mock-assisted demo returned `improved`.
+See [DEMO-TUTORIAL.md](DEMO-TUTORIAL.md) for the presenter walkthrough and
+[DEMO-NOTES.md](DEMO-NOTES.md) for measured evidence and issues.
+The older handoff below is historical: its pending checks are now complete.
+Its piped `--pause` command fails by design; omit `--pause` for automation.
+
+---
+
 # Restart handoff: FDLibM KLEE/Gordian demo
 
 ## Resume here

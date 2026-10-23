@@ -1,5 +1,6 @@
 # Presenter notes: KLEE and Gordian on FDLibM
 
+Start with the step-by-step [DEMO-TUTORIAL.md](DEMO-TUTORIAL.md).
 Companion to [DEMO.md](DEMO.md). Run commands from the repository root.
 The reduced driver uses `2 <= x <= 6`; the real FDLibM sine/cosine and
 their helpers are linked into KLEE and native replay.
@@ -69,6 +70,8 @@ evidence of solver difficulty.
 | Official image extraction exceeded Docker's 10 GiB disk | Enlarge the VM Docker disk to at least 30 GiB and use the official image. A local trimmed-runtime import was attempted, but has not been validated for the demo. |
 | A second daemon on `/tmp` could not create writable OverlayFS layers | Use the normal daemon on its native ext4 disk after expansion; do not use the attempted second daemon for the demo. |
 | Standalone clang could not find `libclang-cpp.so.13` | Include `/tmp/llvm-130-install_O_D_A/lib` in the container's `LD_LIBRARY_PATH` alongside the KLEE runtime library path. |
+| Python venv failed because ensurepip is missing after restart | Use installed `uv` to create the environment and install dependencies, or install the distro Python venv package first. |
+| Handoff piped newlines into `--pause`, which rejects noninteractive stdin | Omit `--pause` for automated rehearsal; use a real terminal for presentation. Failed run retained as `runs/rehearsal-full/`. |
 | No live provider credentials available | Rehearse with the explicitly labeled local HTTP mock; configure the real endpoint/model/key for production. |
 
 These storage workarounds are specific to this workspace. On a normal machine,
@@ -172,9 +175,14 @@ Keep these open beside the terminal:
   starting or pulling a container. Artifact: `runs/rehearsal-prerequisites/`.
 - The default 10 GiB Docker data filesystem could not extract the official
   image. Source and mock tests cannot detect this setup requirement.
-- Full container-based compilation, KLEE exploration, and original-code replay
-  remain **pending** the VM disk expansion. These checks alone do not establish
-  a successful demo. Resume using [RESTART-HANDOFF.md](RESTART-HANDOFF.md).
+- Full container-based native/bitcode compilation, baseline and assisted KLEE,
+  and original FDLibM replay passed on 2026-10-22 after disk expansion.
+  `runs/rehearsal-full-auto/result.json` records `improved` in 8.18 seconds.
+  Baseline: 2 and 2.375, both outcome 1; assisted: 2 (outcome 1) and 4
+  (outcome 2). Each KLEE run generated two tests with zero errors.
+  Baseline exploration took 1.27 seconds; assisted exploration 1.20 seconds.
+  The HTTP model boundary used the explicitly labeled mock; live model
+  performance remains untested. All 68 tests passed again after restart.
 
 ## Recovery
 
@@ -188,3 +196,17 @@ Keep these open beside the terminal:
 - `interrupted` preserves partial artifacts; a fresh run starts over.
 - Keep a recording and artifacts from a successful rehearsal. Label recorded
   or mocked material explicitly when using it as a fallback.
+
+The separate `runs/rehearsal-interactive/` run also returned `improved`
+using a real terminal and all three Enter pauses.
+
+## Storage and official-image check after restart
+
+Docker uses `/var/lib/docker`, not `/var/docker`. Its expanded ext4 filesystem
+is 30 GiB. Before pulling it had about 28 GiB free; after the official image
+pull and full run it used about 13 GiB with 15 GiB free. The root filesystem
+had 18 GiB free and the host-backed workspace 114 GiB free; these are separate
+filesystems. No trimmed image or second daemon was needed. The official image
+worked without manually changing `LD_LIBRARY_PATH`: clang and LLVM are 13.0.1,
+KLEE is 3.0. Image digest:
+`sha256:8f76ff8a820e255b5b6503eb84dfb2e9e48dae52f46b6d82d1e67e492f63f2d2`.

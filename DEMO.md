@@ -5,6 +5,8 @@ It shows baseline KLEE, its diagnostics, the model's complete response, the
 generated code diff, KLEE on that code, and concrete inputs replayed through
 the original computation. It does not run the benchmark suite.
 
+**First-time presenter walkthrough:** [DEMO-TUTORIAL.md](DEMO-TUTORIAL.md).
+
 **Rehearsal record and presenter notes:** see [DEMO-NOTES.md](DEMO-NOTES.md)
 for the executed checks, results, setup requirements, and a credential-free
 rehearsal using an explicitly labeled mock model response. Real provider
