@@ -139,8 +139,8 @@ default model ID; provider model availability changes.
 For OpenRouter, enter your key without putting its value in shell history:
 
 ```bash
-read -rs -p 'OpenRouter key: ' OPENROUTER_API_KEY
-export OPENROUTER_API_KEY
+read -rs -p 'OpenRouter key: ' OPENROUTER_API_KEY_
+export OPENROUTER_API_KEY_
 ```
 
 The equivalent DeepInfra variable is `DEEPINFRA_API_KEY`. Credentials are

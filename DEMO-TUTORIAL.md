@@ -214,8 +214,8 @@ To change the LLM, change only this stage's endpoint/model/key options. For
 OpenRouter, for example:
 
 ```bash
-read -rs -p 'OpenRouter key: ' OPENROUTER_API_KEY
-export OPENROUTER_API_KEY
+read -rs -p 'OpenRouter key: ' OPENROUTER_API_KEY_
+export OPENROUTER_API_KEY_
 python -m gordian.demo generate \
   --from-run runs/practice-baseline --name practice-live-ghost \
   --provider openrouter --model 'YOUR_PROVIDER/MODEL_ID'

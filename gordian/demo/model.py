@@ -10,7 +10,7 @@ from ..llm.base import parse_file_blocks
 
 def endpoint_config(provider: str, base_url: str | None, key_env: str | None) -> tuple[str, str]:
     defaults = {
-        "openrouter": ("https://openrouter.ai/api/v1", "OPENROUTER_API_KEY"),
+        "openrouter": ("https://openrouter.ai/api/v1", "OPENROUTER_API_KEY_"),
         "deepinfra": ("https://api.deepinfra.com/v1/openai", "DEEPINFRA_API_KEY"),
         "custom": ("", "GORDIAN_API_KEY"),
     }

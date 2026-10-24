@@ -120,8 +120,8 @@ use the official image and enough Docker storage. A second daemon is unnecessary
 OpenRouter:
 
 ```bash
-read -rs -p 'OpenRouter key: ' OPENROUTER_API_KEY
-export OPENROUTER_API_KEY
+read -rs -p 'OpenRouter key: ' OPENROUTER_API_KEY_
+export OPENROUTER_API_KEY_
 python -m gordian.demo --provider openrouter \
   --model 'YOUR_PROVIDER/MODEL_ID' --name trig-production --pause
 ```

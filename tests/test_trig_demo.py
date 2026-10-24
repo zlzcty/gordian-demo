@@ -69,6 +69,8 @@ def test_success_requires_both_original_outcomes_and_reports_baseline_success():
 
 
 def test_endpoint_options_are_explicit():
+    assert endpoint_config("openrouter", None, None) == (
+        "https://openrouter.ai/api/v1", "OPENROUTER_API_KEY_")
     assert endpoint_config("deepinfra", None, None) == (
         "https://api.deepinfra.com/v1/openai", "DEEPINFRA_API_KEY")
     assert endpoint_config("custom", "https://example.org/v1/", "MY_KEY") == (
