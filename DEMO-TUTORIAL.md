@@ -347,3 +347,15 @@ workspace venv symlinks, and missing Python ensurepip. For the new checker,
 LLVM 13's `llvm-profdata --version` was a false failure; executable probes now
 use `--help`. The normal official image, expanded Docker disk, and external
 venv work here. See DEMO-NOTES.md for the complete issue record.
+
+### Invalid `klee_assume` with short-circuit operators
+
+A generated assumption using `&&`/`||` can create intermediate branches that
+reach `klee_assume(0)`, reported as “invalid klee_assume call (provably false)”.
+For comparisons without side effects, using `&`/`|` on their Boolean results
+avoids those short-circuit branches while preserving the intended constraint.
+In `runs/live-assisted/`, this happened for an input in the excluded gap
+`3 < x < 3.3`. The normal completed tests at 2 and approximately 3.3 still
+replayed to outcomes 1 and 2. `SUCCESS` means original replay confirmed both
+outcomes; it does not mean KLEE reported zero errors. The runner also replays
+error-generated tests, so inspect the `.user.err` files when assessing results.
