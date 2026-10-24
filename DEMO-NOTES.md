@@ -5,6 +5,44 @@ Companion to [DEMO.md](DEMO.md). Run commands from the repository root.
 The reduced driver uses `2 <= x <= 6`; the real FDLibM sine/cosine and
 their helpers are linked into KLEE and native replay.
 
+## Current modular workflow — 2026-10-23
+
+Use the updated [DEMO-TUTORIAL.md](DEMO-TUTORIAL.md). The preferred flow is now
+three separate invocations of `python -m gordian.demo`: `baseline`, `generate`,
+and `assisted`. `scripts/check_demo.py` checks prerequisites with simple
+`Name: OK` / `Name: FAIL` output. The older combined flow below is historical
+and remains available.
+
+Actual split rehearsal on the official running container:
+
+| Stage | Artifact directory | Result | Seconds |
+| --- | --- | --- | --- |
+| Baseline | `runs/modular-final-baseline/` | Inputs 2 and 2.375; both outcome 1; outcome 2 missing | 2.82 |
+| Generate | `runs/modular-final-ghost/` | One HTTP request to the labeled mock; response and diff saved | 0.21 |
+| Assisted | `runs/modular-final-assisted/` | Original replay at 2 → 1 and 4 → 2; printed SUCCESS | 2.92 |
+
+Both KLEE invocations generated two tests and reported zero errors. All **80
+repository tests passed**. All readiness checks passed, including actual
+native/bitcode builds and the optional HTTP model-list probe. Transcript:
+`runs/modular-check-final.log`. The rehearsal mock ran on port 8048 to avoid
+interfering with an existing practice server; it was stopped afterward. Docker
+was started and left running. No live model credentials were used.
+
+The first checker version incorrectly tried `llvm-profdata --version`, which
+LLVM 13 rejects. Switching executable probes to `--help` fixed the false FAIL.
+The earlier failed checker transcript is retained in `runs/modular-check.log`.
+
+To check abstraction, a second scalar target with function `classify`, input
+`probe` in [10,20], replay prefix `OTHER`, required outcomes 7/8, and no helper
+sources was compiled and explored without changing executor code. Its baseline
+replayed 10 → 7 and 15.000000000000227 → 8, with no missing outcomes:
+`runs/modular-alternate-baseline/`. This is intentionally a baseline success.
+
+Target configuration, code snapshots, response hashes, stage transitions,
+changed-snapshot rejection, and replay-based success are covered by the new
+contract tests. The new target adapter supports one bounded little-endian
+binary64 object; other input shapes require a separate adapter.
+
 ## Requirements and preparation
 
 | Requirement | What to prepare |

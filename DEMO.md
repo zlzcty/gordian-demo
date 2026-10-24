@@ -1,5 +1,11 @@
 # KLEE → Gordian → original-code replay
 
+The current presenter flow uses separate `baseline`, `generate`, and `assisted`
+commands plus `python scripts/check_demo.py`. Start with
+[DEMO-TUTORIAL.md](DEMO-TUTORIAL.md) for commands, target configuration, and
+SUCCESS criteria. The combined five-step invocation documented below remains
+available for compatibility.
+
 This demo uses one small example and one OpenAI-compatible model request.
 It shows baseline KLEE, its diagnostics, the model's complete response, the
 generated code diff, KLEE on that code, and concrete inputs replayed through

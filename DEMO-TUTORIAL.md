@@ -104,129 +104,246 @@ pytest -q
 All 68 tests passed here. They check contracts; only running the demo checks
 the complete toolchain. The official image needed no library-path workaround.
 
-## 3. Rehearse the complete flow
+## 3. Check readiness
 
-Terminal A, with the venv activated:
+The demo now has three independent commands: `baseline`, `generate`, and
+`assisted`. Each command finishes and returns to the shell. There are no Enter
+pauses in these modes. The old combined invocation remains available for
+compatibility, but use the commands below for presenting.
+
+First check local execution requirements:
+
+```bash
+python scripts/check_demo.py
+# Equivalent: python -m gordian.demo check
+```
+
+It prints simple labels such as `Container: OK` or `Build: FAIL`, and exits
+nonzero if any check fails. It checks Python/packages, settings, Docker CLI,
+container state, repository mount, executable tools, target files, output access,
+and actual native and bitcode compilation. Build checks use a temporary directory
+under `runs/` and remove it afterward. This check never starts containers.
+
+To check model settings too, supply the same provider options as generation:
+
+```bash
+GORDIAN_REHEARSAL_KEY=not-a-real-key python scripts/check_demo.py \
+  --check-model --provider custom --base-url http://127.0.0.1:8047/v1 \
+  --key-env GORDIAN_REHEARSAL_KEY --model rehearsal-mock
+```
+
+`Model` checks URL syntax and a model setting; `Key` checks a nonempty named
+variable. These checks do not establish remote access. Add `--probe-model` to
+query the endpoint's model listing and check that the configured ID appears.
+That also checks model/key settings; it makes no completion request. Some
+compatible providers do not expose model listings, and a listing does not prove
+completion permission or response quality. Actual generation is the final check.
+
+## 4. Start the rehearsal service
+
+Terminal A, in this repository with the venv activated:
 
 ```bash
 python demos/trig/mock_endpoint.py
 ```
 
 Leave it running. It binds to localhost port 8047 and accepts model
-`rehearsal-mock`. If that port is occupied, check for an existing mock process.
+`rehearsal-mock`. This is an explicitly labeled, prewritten response, not a live
+LLM. If the port is in use by your earlier practice server, stop that server or
+choose another port with `--port 8048` and change all base URLs accordingly.
 
-Terminal B, same directory and venv:
+Terminal B, same directory and venv, runs the three stages below. Choose fresh
+names each time; stages refuse overwrites. `--from-run` is the actual directory
+of the previous stage, not just its name.
+
+## 5. Baseline: run KLEE without ghost code
 
 ```bash
-GORDIAN_REHEARSAL_KEY=not-a-real-key python -m gordian.demo \
-  --provider custom --base-url http://127.0.0.1:8047/v1 \
-  --key-env GORDIAN_REHEARSAL_KEY --model rehearsal-mock \
-  --name my-rehearsal --pause
+python -m gordian.demo baseline --name practice-baseline
 ```
 
-Choose a fresh name for every attempt. There are three Enter pauses. For an
-automated rehearsal, omit `--pause`; piping newlines does not work because the
-runner explicitly requires a terminal for pauses. To capture unattended output,
-use `set -o pipefail` and append `2>&1 | tee runs/my-rehearsal-terminal.log`.
+Show the original guard, concretization diagnostic, and original replay output.
+In the rehearsal:
 
-## 4. Present it, screen by screen
+```text
+ORIGINAL REPLAY: x=2 -> outcome 1
+ORIGINAL REPLAY: x=2.375 -> outcome 1
+Missing outcomes: [2]
+```
 
-Allocate about 5–8 minutes for explanation. The automated flow measured 8.18
-seconds on this machine; model latency and presentation pauses add time.
+Say: “KLEE explored two paths and generated two tests. Both tests take the
+negative-product branch. Standard KLEE concretized the symbolic floating-point
+calculation, so this run did not find a witness for the other branch.”
 
-**Before the first Enter:** open `demos/trig/guard.inc`. Say: “We want inputs
-for both outcomes of this numerical branch. A person can use a trig identity;
-KLEE executes the instructions implementing the numerical library.” State that
-this run uses a mock model response. Press Enter to run baseline exploration.
+This is observed missing coverage, not proof that every baseline configuration
+must fail. If baseline covers both outcomes, it reports
+`baseline_already_succeeds`; do not claim improvement. A successful baseline
+command exits 0 whether it misses outcomes or covers them all. Build/runtime
+failures exit nonzero and are not evidence of solving difficulty.
 
-**At the second pause:** read the concretization diagnostic and original replay
-lines. In the rehearsal they were `x=2 -> outcome 1` and
-`x=2.375 -> outcome 1`. Say: “Two tests are not two target outcomes. Both replay
-on the negative side; outcome 2 is missing.” The baseline took 1.27 seconds,
-produced two tests, and reported zero errors. This is observed incomplete branch
-coverage, not proof that no baseline configuration could find the other branch.
-Press Enter to request the surrogate.
+Open `runs/practice-baseline/result.json`. Its `baseline.witnesses` and
+`missing` fields record the result. The code, helper sources, target settings,
+and hashes are snapshotted here for later stages.
 
-**At the third pause:** the complete response and unified diff have printed.
-Open `runs/<name>/llm/prompt.md` and `surrogate.patch`. Explain that the request
-contains the guard, domain, missing outcome, and diagnostics. The response
-replaces only `guard.inc`; the input driver and original replay executable
-stay fixed. Point to the safe intervals and integer comparisons described
-above. Say: “This response is prewritten for rehearsal. KLEE still has to
-solve the constraints and generate its own concrete inputs.” Press Enter.
+## 6. Generate: request ghost code separately
 
-**At completion:** point to the ORIGINAL REPLAY lines. In the rehearsal the
-assisted tests were `x=2 -> outcome 1` and `x=4 -> outcome 2`. Assisted KLEE took
-1.20 seconds, produced two tests, and reported zero errors. Say: “The replacement
-helped discover a new input, and the original numerical implementation confirms
-the missing branch. The replacement does not certify itself.”
+```bash
+GORDIAN_REHEARSAL_KEY=not-a-real-key python -m gordian.demo generate \
+  --from-run runs/practice-baseline --name practice-ghost \
+  --provider custom --base-url http://127.0.0.1:8047/v1 \
+  --key-env GORDIAN_REHEARSAL_KEY --model rehearsal-mock
+```
 
-Open `runs/<name>/result.json` and locate `status`, `baseline_witnesses`,
-`assisted_witnesses`, and `elapsed_seconds`. `improved` means both original
-outcomes were witnessed and at least one was missing before assistance.
-It does not prove surrogate equivalence, exhaustive coverage, faster execution
-in general, or live model capability. This focused runner demonstrates the
-surrogate stage, not Gordian's full partitioning/inversion pipeline or the
-paper's evaluation.
+This performs one HTTP model request, prints the complete public response and
+diff, and saves them. It does not compile or invoke KLEE and needs no running
+Docker container. The request uses the original snapshot, baseline diagnostics,
+and missing outcomes. Generation does not rerun baseline.
 
-## 5. Inspect the saved evidence
+Open `runs/practice-ghost/llm/prompt.md`, `llm/response.md`, and
+`surrogate.patch`. Explain: “The response replaces the numerical calculation
+with integer bit comparisons and restricts exploration to [2,3] and [4,4.5].
+KLEE can keep those operations symbolic. The first interval returns outcome 1,
+the second outcome 2. The response supplies this mathematical shortcut;
+KLEE does not independently discover or prove the intervals.”
 
-The completed automated run is `runs/rehearsal-full-auto/` in this workspace.
-Its terminal transcript is `runs/rehearsal-full-auto-terminal.log`.
+The input driver and original code stay fixed. The generated function cannot
+replace the driver or introduce new symbolic objects under the response contract.
+The contract is a format/interface check, not a proof of equivalence.
 
-| Evidence | Where to look under that run |
-| --- | --- |
-| Exact original input interface and guard | `original/driver.c`, `original/guard.inc` |
-| Unmodified linked math sources and hashes | `fdlibm/manifest.json`, `fdlibm/*.c` |
-| Baseline command and concretization warning | `baseline/klee.klee.log` |
-| Exact HTTP prompt and mock response | `llm/prompt.md`, `llm/response.md` |
-| Generated change | `surrogate.patch` |
-| Original replay for assisted tests | `assisted/replay/observations.json` and per-test logs |
-| Final decision and witnesses | `result.json` |
-
-The accepted input bytes were `0000000000000040` for 2 and
-`0000000000001040` for 4, in little-endian order. Native replay uses the same
-snapshot of ten FDLibM sources as baseline and assisted builds. Namespaced
-symbols and disabled external math fallback prevent accidental system-libm
-substitution. The native executable always contains the original guard.
-Run artifacts are ignored by Git; copy them separately if moving the presentation.
-
-## 6. Switch to a live model when ready
-
-Start from a successfully rehearsed environment. For OpenRouter:
+To change the LLM, change only this stage's endpoint/model/key options. For
+OpenRouter, for example:
 
 ```bash
 read -rs -p 'OpenRouter key: ' OPENROUTER_API_KEY
 export OPENROUTER_API_KEY
-python -m gordian.demo --provider openrouter \
-  --model 'YOUR_PROVIDER/MODEL_ID' --name my-live-demo --pause
+python -m gordian.demo generate \
+  --from-run runs/practice-baseline --name practice-live-ghost \
+  --provider openrouter --model 'YOUR_PROVIDER/MODEL_ID'
 ```
 
-For DeepInfra use `--provider deepinfra`, its exact model ID, and
-`DEEPINFRA_API_KEY`. Other OpenAI-compatible services use `--provider custom`,
-`--base-url`, and `--key-env` as in the mock command. Use the API base URL,
-not the chat-completions path. The real service must be reachable and the key
-must have access to that model. No live credentials were available here, so
-rehearse this step separately before claiming a live-model result. There is
-one request and no automatic repair loop.
+DeepInfra uses `--provider deepinfra` and `DEEPINFRA_API_KEY`. Other
+OpenAI-compatible providers use `--provider custom --base-url ... --key-env ...`.
+Use the API base URL, not its chat-completions path. Generation has one request,
+a timeout and no automatic repair loop. You can generate multiple alternatives
+from one baseline by choosing different output names. Live-model performance
+has not been tested here.
 
-## 7. Handle deviations honestly
+## 7. Assisted: run KLEE with ghost code and replay the results
 
-If baseline already covers both outcomes, the runner skips the model and
-reports `baseline_already_succeeds`. Retain that result; different tools may
-explore differently. No domain change was needed in our successful rehearsal.
+```bash
+python -m gordian.demo assisted \
+  --from-run runs/practice-ghost --name practice-assisted
+```
 
-If the result is `incomplete`, inspect original replay observations and the
-surrogate restrictions. If it is `error`, read build, endpoint, or KLEE logs;
-a broken toolchain does not demonstrate a solver limitation. Reusing a run name
-is rejected. Interrupted and failed runs retain partial evidence.
+This stage requires Docker but no API key, model service, or model selection.
+It compiles the replacement, runs KLEE, then replays every checked test using
+a freshly built ORIGINAL executable. Both builds use the same helper snapshot.
+The generated driver is reconstructed from the fixed original driver; the
+original guard is never replaced in the replay executable.
 
-The earlier failures were disk exhaustion on the old 10 GiB Docker filesystem,
-a failed second-daemon OverlayFS workaround, unsupported workspace venv
-symlinks, missing Python `ensurepip` after restart, and the invalid piped-pause
-command. The expanded normal Docker daemon and the venv above resolved setup;
-no source-code fix was required. See the issue table in DEMO-NOTES.md.
+Expected rehearsal output:
 
-After rehearsal stop the mock with Ctrl-C in terminal A. Keep successful
-artifacts and, if desired, make a recording before the talk. Label recorded
-or mocked material explicitly if using it as a fallback.
+```text
+ORIGINAL REPLAY: x=2 -> outcome 1
+ORIGINAL REPLAY: x=4 -> outcome 2
+SUCCESS
+```
+
+`SUCCESS` means the assisted tests have valid original-code replay witnesses
+for **all required outcomes**. It is not enough for the surrogate to return both
+labels. If assisted original replay does not cover them all, it prints
+`INCOMPLETE` and exits 1. `result.json` includes `assisted.witnesses`, the original
+baseline evidence, and `added_outcomes`, so improvement can be distinguished
+from a baseline that already covered everything. SUCCESS does not require a
+baseline failure, and it does not claim equivalence or exhaustive input ranges.
+
+Say: “The ghost code helped KLEE generate a new candidate. Running that input
+through the original numerical code confirms the missing branch.”
+
+Stop the mock in terminal A with Ctrl-C afterward. The KLEE container can stay
+running for further practice.
+
+## 8. Change the target without editing stage orchestration
+
+Pass a target description to baseline:
+
+```bash
+python -m gordian.demo baseline \
+  --target demos/trig/target.json --name another-baseline
+```
+
+Copy that JSON and its driver/guard to a new example directory to target another
+fragment. Paths inside the JSON are relative to that JSON file. Configure:
+
+| Field | Purpose |
+| --- | --- |
+| `driver`, `guard` | Fixed harness source and replaceable fragment; the driver includes `guard.inc` |
+| `function` | Replacement function name, with signature `static int NAME(double x)` |
+| `library` | Directory holding helper sources and headers |
+| `sources`, `headers` | Plain, unique filenames to snapshot from that directory; empty lists are supported |
+| `cflags` | Shared native/bitcode compiler options, including any symbol renaming |
+| `instructions` | Target-specific context, semantics, and hints for the model |
+| `input` | Symbolic object name, `binary64-le` format, and numeric `min`/`max` |
+| `replay_prefix` | Prefix for the driver's native output: `PREFIX x=... outcome=...` |
+| `outcomes` | Integer branch labels that assisted original replay must cover |
+
+The adapter currently supports **one bounded little-endian binary64 symbolic
+input** and an integer outcome. This is an explicit scope boundary. Structured,
+multiple, or string inputs need a new input/replay adapter. Stage orchestration
+and model transport do not need target-specific changes for other targets
+within this contract. Helper sources may be empty; the FDLibM closure is not
+hardcoded in the new stage executor.
+
+Keep the JSON contract consistent with the C driver: input name, domain,
+function call, and replay output must agree. Changing bounds in JSON alone does
+not rewrite C. The native/bitcode build check catches build failures, while
+replay validation rejects incompatible test objects or observations.
+
+Only baseline accepts `--target`. Later stages inherit and verify the frozen
+snapshot through `--from-run`. Changing checkout code afterward does not change
+an existing experiment. Edited original snapshots or generated guards are
+rejected; make a fresh baseline or generation instead of editing artifacts.
+
+## 9. Artifacts and actual rehearsal record
+
+Each stage has its own `result.json`, settings, timing, and retained error
+artifacts. Code snapshots live under `original/`, `library/`, and `target.json`;
+`snapshot.json` records their hashes. Baseline and assisted runs also contain:
+
+- `native/build.log` and `native/original-replay`.
+- `exploration/build/build.log` and `exploration/klee.klee.log`.
+- `exploration/klee/*.ktest`, `warnings.txt`, and `messages.txt`.
+- `replay/observations.json` and per-test replay logs.
+
+Generation contains `llm/prompt.md`, `llm/response.md`, `surrogate/guard.inc`,
+`surrogate/notes.md`, and `surrogate.patch`. Artifacts are ignored by Git;
+copy them separately if moving the presentation.
+
+The split workflow was rehearsed in this VM using `runs/modular-final-baseline/`,
+`runs/modular-final-ghost/`, and `runs/modular-final-assisted/`. The mock was on
+port **8048** to avoid disturbing any existing practice server. The requirements
+transcript is `runs/modular-check-final.log`; terminal transcripts are
+`runs/modular-final-*-terminal.log`. Actual outcomes were baseline 2 and 2.375
+(both 1), assisted 2 (1) and 4 (2), followed by SUCCESS. Both KLEE invocations
+produced two tests with zero errors.
+
+The older combined flow was rehearsed in `runs/rehearsal-full-auto/` in 8.18
+seconds; its five-step pauses and artifact layout apply only to the legacy
+combined invocation. The split commands return to the shell between stages.
+
+## 10. Recover from problems
+
+A run name cannot be reused. Failed stages retain their logs and error status;
+retry into a new directory. Generation can reuse the same completed baseline,
+and assisted execution can reuse the same completed generation.
+
+Do not feed a failed or wrong-stage directory to the next command. Do not
+interpret `error`, compilation failures, or invalid replay observations as
+constraint-solving difficulty. Inspect actual original replay evidence if
+assisted execution reports `INCOMPLETE`.
+
+Setup issues from the first rehearsal included insufficient Docker disk space,
+workspace venv symlinks, and missing Python ensurepip. For the new checker,
+LLVM 13's `llvm-profdata --version` was a false failure; executable probes now
+use `--help`. The normal official image, expanded Docker disk, and external
+venv work here. See DEMO-NOTES.md for the complete issue record.
