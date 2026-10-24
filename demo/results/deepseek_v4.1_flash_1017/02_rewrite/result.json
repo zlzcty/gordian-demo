@@ -1,0 +1,26 @@
+{
+  "triage": [
+    {
+      "start": 12,
+      "end": 13,
+      "technique": "model",
+      "score": 0.8,
+      "reason": "The region is guarded by a floating point comparison which is solver-hostile.",
+      "fragment": {
+        "start": 12,
+        "end": 13
+      },
+      "file": "benchmarks/logic_bombs_src/floating_point/float1_fp_l1_klee.c"
+    }
+  ],
+  "models": [
+    {
+      "file": "benchmarks/logic_bombs_src/floating_point/float1_fp_l1_klee.c",
+      "round": 0,
+      "model": "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/02_rewrite/float1_fp_l1_klee.model.c",
+      "ktests": 1,
+      "ok": true,
+      "still_uncovered": 1
+    }
+  ]
+}

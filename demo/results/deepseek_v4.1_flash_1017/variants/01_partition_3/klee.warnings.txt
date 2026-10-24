@@ -1,0 +1,4 @@
+calling external: syscall(16, 0, 21505, 94621267735568) at klee_src/runtime/POSIX/fd.c:1011 10
+silently concretizing (reason: floating point) expression (Add w32 4294967248
+ERROR: runs/float1-nemo-1/01_partition/harness_part3.c:14: invalid klee_assume call (provably false)
+ERROR: runs/float1-nemo-1/01_partition/harness_part3.c:21: invalid klee_assume call (provably false)

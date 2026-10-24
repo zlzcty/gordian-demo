@@ -1,0 +1,22 @@
+{
+  "name": "fix_02_model_float1_fp_l1_klee",
+  "backend": "openrouter",
+  "model": "mistralai/mistral-nemo",
+  "ok": true,
+  "missing": [],
+  "error": null,
+  "usage": {
+    "input_tokens": 761,
+    "output_tokens": 366,
+    "calls": 1,
+    "wall_seconds": 27.56
+  },
+  "instructions": "`float1_fp_l1_klee.model.c` does not compile; `compile_errors.txt` has the compiler output (clang, C99, KLEE headers available). Fix ONLY the compile errors (missing includes, declarations, stray annotations, unbalanced braces, macro continuations, typos) without changing the intended behaviour, and write the corrected file back as `float1_fp_l1_klee.model.c`.",
+  "inputs": [
+    "float1_fp_l1_klee.model.c",
+    "compile_errors.txt"
+  ],
+  "outputs": [
+    "float1_fp_l1_klee.model.c"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "triage": [
+    {
+      "start": 13,
+      "end": 13,
+      "technique": "model",
+      "score": 0.8,
+      "reason": "Floating point comparison (a - b == 0) is solver-hostile.",
+      "fragment": {
+        "start": 13,
+        "end": 13
+      },
+      "file": "benchmarks/logic_bombs_src/floating_point/float1_fp_l1_klee.c"
+    }
+  ],
+  "models": [
+    {
+      "file": "benchmarks/logic_bombs_src/floating_point/float1_fp_l1_klee.c",
+      "round": 0,
+      "model": "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/02_rewrite/float1_fp_l1_klee.model.fixed.c",
+      "ktests": 0,
+      "ok": false,
+      "still_uncovered": 1
+    }
+  ]
+}

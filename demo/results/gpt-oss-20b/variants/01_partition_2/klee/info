@@ -1,0 +1,20 @@
+/home/klee/klee_build/bin/klee --output-dir=/gordian/runs/gpt-oss-20b/variants/01_partition_2/klee --max-time=45 --max-solver-time=20 --solver-backend=z3 --search=bfs --emit-all-errors --write-cov --watchdog --libc=uclibc --posix-runtime --external-calls=all --only-output-states-covering-new /gordian/runs/gpt-oss-20b/variants/01_partition_2/build/module_with_harness.bc
+PID: 2400
+Using monotonic steady clock with 1/1000000000s resolution
+Started: 2026-10-24 02:09:57
+BEGIN searcher description
+BFSSearcher
+END searcher description
+Finished: 2026-10-24 02:09:57
+Elapsed: 00:00:00
+KLEE: done: explored paths = 3
+KLEE: done: avg. constructs per query = 16
+KLEE: done: total queries = 8
+KLEE: done: valid queries = 1
+KLEE: done: invalid queries = 7
+KLEE: done: query cex = 8
+
+KLEE: done: total instructions = 14591
+KLEE: done: completed paths = 3
+KLEE: done: partially completed paths = 0
+KLEE: done: generated tests = 3

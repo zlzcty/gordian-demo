@@ -1,0 +1,180 @@
+{
+  "stages": {
+    "partition": {
+      "harnesses": [
+        "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/01_partition/harness_part1.c",
+        "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/01_partition/harness_part2.c",
+        "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/01_partition/harness_part3.c"
+      ],
+      "runs": [
+        {
+          "harness": "harness_part1.c",
+          "round": 0,
+          "ktests": 3,
+          "ok": true
+        },
+        {
+          "harness": "harness_part2.c",
+          "round": 0,
+          "ktests": 3,
+          "ok": true
+        },
+        {
+          "harness": "harness_part3.c",
+          "round": 0,
+          "ktests": 3,
+          "ok": true
+        }
+      ],
+      "seconds": 71
+    },
+    "rewrite": {
+      "models": [
+        {
+          "file": "benchmarks/logic_bombs_src/floating_point/float1_fp_l1_klee.c",
+          "round": 0,
+          "model": "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/02_rewrite/float1_fp_l1_klee.model.fixed.c",
+          "ktests": 0,
+          "ok": false,
+          "still_uncovered": 1
+        }
+      ],
+      "seconds": 67
+    },
+    "inversion": {
+      "candidates": [],
+      "results": [],
+      "seconds": 0
+    }
+  },
+  "triage": [
+    {
+      "start": 13,
+      "end": 13,
+      "technique": "model",
+      "score": 0.8,
+      "reason": "Floating point comparison (a - b == 0) is solver-hostile.",
+      "fragment": {
+        "start": 13,
+        "end": 13
+      },
+      "file": "benchmarks/logic_bombs_src/floating_point/float1_fp_l1_klee.c"
+    }
+  ],
+  "target": "lb_float1_fp_l1",
+  "family": "logic_bombs",
+  "backend": "openrouter:mistralai/mistral-nemo",
+  "budget_s": 600.0,
+  "elapsed_s": 144,
+  "coverage": {
+    "covered": 12,
+    "total": 13,
+    "ratio": 0.9231,
+    "files": {
+      "benchmarks/logic_bombs_src/floating_point/float1_fp_l1_klee.c": {
+        "covered": 12,
+        "total": 13,
+        "ratio": 0.9231
+      }
+    }
+  },
+  "bombs_reached": [],
+  "tests": 10,
+  "suite": [
+    {
+      "group": 0,
+      "harness": null,
+      "ktests": 1,
+      "copied": 1,
+      "source_dirs": [
+        "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/variants/00_explore/klee"
+      ]
+    },
+    {
+      "group": 1,
+      "harness": "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/01_partition/harness_part1.c",
+      "ktests": 3,
+      "copied": 3,
+      "source_dirs": [
+        "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/variants/01_partition_1/klee"
+      ]
+    },
+    {
+      "group": 2,
+      "harness": "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/01_partition/harness_part2.c",
+      "ktests": 3,
+      "copied": 3,
+      "source_dirs": [
+        "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/variants/01_partition_2/klee"
+      ]
+    },
+    {
+      "group": 3,
+      "harness": "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/01_partition/harness_part3.c",
+      "ktests": 3,
+      "copied": 3,
+      "source_dirs": [
+        "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/variants/01_partition_3/klee"
+      ]
+    }
+  ],
+  "history": [
+    {
+      "label": "00_explore",
+      "ktests": 1,
+      "new_lines": 12,
+      "covered": 12,
+      "total": 13,
+      "t": 6,
+      "harness": null
+    },
+    {
+      "label": "01_partition_1",
+      "ktests": 3,
+      "new_lines": 0,
+      "covered": 12,
+      "total": 13,
+      "t": 72,
+      "harness": "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/01_partition/harness_part1.c"
+    },
+    {
+      "label": "01_partition_2",
+      "ktests": 3,
+      "new_lines": 0,
+      "covered": 12,
+      "total": 13,
+      "t": 74,
+      "harness": "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/01_partition/harness_part2.c"
+    },
+    {
+      "label": "01_partition_3",
+      "ktests": 3,
+      "new_lines": 0,
+      "covered": 12,
+      "total": 13,
+      "t": 77,
+      "harness": "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/01_partition/harness_part3.c"
+    },
+    {
+      "label": "02_model_float1_fp_l1_klee",
+      "error": "build failed",
+      "t": 116
+    },
+    {
+      "label": "02_model_float1_fp_l1_klee_fixed",
+      "error": "build failed",
+      "t": 144
+    }
+  ],
+  "llm_usage": {
+    "input_tokens": 5720,
+    "output_tokens": 1659,
+    "calls": 4,
+    "wall_seconds": 127.17
+  },
+  "uncovered": {
+    "benchmarks/logic_bombs_src/floating_point/float1_fp_l1_klee.c": [
+      13
+    ]
+  }
+}

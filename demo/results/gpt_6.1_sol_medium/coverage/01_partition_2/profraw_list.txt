@@ -1,0 +1,6 @@
+/gordian/runs/lb_float1_fp_l1_20261023-165611/coverage/01_partition_2/profraw/t_00002_test000003.profraw
+/gordian/runs/lb_float1_fp_l1_20261023-165611/coverage/01_partition_2/profraw/t_00004_test000005.profraw
+/gordian/runs/lb_float1_fp_l1_20261023-165611/coverage/01_partition_2/profraw/t_00003_test000004.profraw
+/gordian/runs/lb_float1_fp_l1_20261023-165611/coverage/01_partition_2/profraw/t_00000_test000001.profraw
+/gordian/runs/lb_float1_fp_l1_20261023-165611/coverage/01_partition_2/profraw/t_00001_test000002.profraw
+/gordian/runs/lb_float1_fp_l1_20261023-165611/coverage/01_partition_2/profraw/t_00005_test000006.profraw

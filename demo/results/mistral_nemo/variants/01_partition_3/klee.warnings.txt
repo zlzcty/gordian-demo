@@ -1,0 +1,14 @@
+undefined reference to function: __syscall_rt_sigaction
+undefined reference to function: close
+undefined reference to function: fcntl
+undefined reference to function: fstat
+undefined reference to function: ioctl
+undefined reference to function: lseek64
+undefined reference to function: open
+undefined reference to function: read
+undefined reference to function: select
+undefined reference to function: time
+undefined reference to function: write
+undefined reference to function: kill (UNSAFE)!
+calling external: ioctl(0, 21505, 94264492375168) at libc/termios/tcgetattr.c:43 12
+silently concretizing (reason: floating point) expression (Add w32 4294967248

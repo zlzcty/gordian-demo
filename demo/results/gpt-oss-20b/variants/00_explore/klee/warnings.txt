@@ -1,0 +1,5 @@
+KLEE: WARNING ONCE: calling external: syscall(16, 0, 21505, 93890015277280) at klee_src/runtime/POSIX/fd.c:1011 10
+KLEE: WARNING ONCE: Alignment of memory from call "malloc" is not modelled. Using alignment of 8.
+KLEE: WARNING ONCE: calling __klee_posix_wrapped_main with extra arguments.
+KLEE: WARNING ONCE: silently concretizing (reason: floating point) expression (Add w32 4294967248
+          (SExt w32 (Read w8 0 s))) to value 4294967248 (benchmarks/logic_bombs_src/floating_point/float1_fp_l1_klee.c:9)

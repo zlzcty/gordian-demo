@@ -1,0 +1,124 @@
+{
+  "target": "lb_float1_fp_l1",
+  "budget": {
+    "total": 600.0,
+    "elapsed": 144
+  },
+  "coverage": {
+    "ktests": 10,
+    "replay_failures": 0,
+    "covered": 12,
+    "total": 13,
+    "ratio": 0.9231,
+    "files": {
+      "benchmarks/logic_bombs_src/floating_point/float1_fp_l1_klee.c": {
+        "covered": [
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          15,
+          18,
+          19,
+          20,
+          21,
+          22
+        ],
+        "uncovered": [
+          13
+        ],
+        "total": 13,
+        "ratio": 0.9231
+      }
+    }
+  },
+  "bombs_reached": [],
+  "history": [
+    {
+      "label": "00_explore",
+      "ktests": 1,
+      "new_lines": 12,
+      "covered": 12,
+      "total": 13,
+      "t": 6,
+      "harness": null
+    },
+    {
+      "label": "01_partition_1",
+      "ktests": 3,
+      "new_lines": 0,
+      "covered": 12,
+      "total": 13,
+      "t": 72,
+      "harness": "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/01_partition/harness_part1.c"
+    },
+    {
+      "label": "01_partition_2",
+      "ktests": 3,
+      "new_lines": 0,
+      "covered": 12,
+      "total": 13,
+      "t": 74,
+      "harness": "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/01_partition/harness_part2.c"
+    },
+    {
+      "label": "01_partition_3",
+      "ktests": 3,
+      "new_lines": 0,
+      "covered": 12,
+      "total": 13,
+      "t": 77,
+      "harness": "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/01_partition/harness_part3.c"
+    },
+    {
+      "label": "02_model_float1_fp_l1_klee",
+      "error": "build failed",
+      "t": 116
+    },
+    {
+      "label": "02_model_float1_fp_l1_klee_fixed",
+      "error": "build failed",
+      "t": 144
+    }
+  ],
+  "suite": [
+    {
+      "harness": null,
+      "ktests": [
+        "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/variants/00_explore/klee/test000001.ktest"
+      ]
+    },
+    {
+      "harness": "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/01_partition/harness_part1.c",
+      "ktests": [
+        "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/variants/01_partition_1/klee/test000001.ktest",
+        "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/variants/01_partition_1/klee/test000002.ktest",
+        "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/variants/01_partition_1/klee/test000003.ktest"
+      ]
+    },
+    {
+      "harness": "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/01_partition/harness_part2.c",
+      "ktests": [
+        "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/variants/01_partition_2/klee/test000001.ktest",
+        "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/variants/01_partition_2/klee/test000002.ktest",
+        "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/variants/01_partition_2/klee/test000003.ktest"
+      ]
+    },
+    {
+      "harness": "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/01_partition/harness_part3.c",
+      "ktests": [
+        "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/variants/01_partition_3/klee/test000001.ktest",
+        "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/variants/01_partition_3/klee/test000002.ktest",
+        "/c/TempProjectWork/codex-work-1/gordian/runs/float1-nemo-1/variants/01_partition_3/klee/test000003.ktest"
+      ]
+    }
+  ],
+  "llm_usage": {
+    "input_tokens": 5720,
+    "output_tokens": 1659,
+    "calls": 4,
+    "wall_seconds": 127.17
+  }
+}

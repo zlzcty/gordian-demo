@@ -1,0 +1,4 @@
+{"id": "0001", "tag": "task.partition", "model": "mistralai/mistral-nemo", "input_tokens": 1336, "output_tokens": 799, "calls": 1, "wall_seconds": 60.76}
+{"id": "0003", "tag": "triage", "model": "mistralai/mistral-nemo", "input_tokens": 1405, "output_tokens": 85, "calls": 1, "wall_seconds": 6.96}
+{"id": "0004", "tag": "task.model", "model": "mistralai/mistral-nemo", "input_tokens": 2218, "output_tokens": 409, "calls": 1, "wall_seconds": 31.95}
+{"id": "0006", "tag": "task.fix_02_model_float1_fp_l1_klee", "model": "mistralai/mistral-nemo", "input_tokens": 761, "output_tokens": 366, "calls": 1, "wall_seconds": 27.51}

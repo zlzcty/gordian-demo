@@ -1,0 +1,41 @@
+$ timeout -s INT -k 15 55 /home/klee/klee_build/bin/klee --output-dir=/gordian/runs/float1-nemo-1/variants/01_partition_1/klee --max-time=45 --max-solver-time=20 --solver-backend=z3 --search=bfs --emit-all-errors --write-cov --watchdog --libc=uclibc --external-calls=all --only-output-states-covering-new /gordian/runs/float1-nemo-1/variants/01_partition_1/build/module_with_harness.bc
+
+[stdout]
+
+
+[stderr]
+KLEE: KLEE: WATCHDOG: watching 1718
+
+KLEE: NOTE: Using klee-uclibc : /tmp/klee_build130stp_z3/runtime/lib/klee-uclibc.bca
+KLEE: output directory is "/gordian/runs/float1-nemo-1/variants/01_partition_1/klee"
+KLEE: Using Z3 solver backend
+warning: Linking two modules of different target triples: '/gordian/runs/float1-nemo-1/variants/01_partition_1/build/module_with_harness.bc' is 'x86_64-unknown-linux-gnu' whereas '__uClibc_main.os' is 'x86_64-pc-linux-gnu'
+
+warning: Linking two modules of different target triples: 'klee_range64_Debug+Asserts.bc' is 'x86_64-unknown-linux-gnu' whereas '__uClibc_main.os' is 'x86_64-pc-linux-gnu'
+
+warning: Linking two modules of different target triples: 'klee_div_zero_check64_Debug+Asserts.bc' is 'x86_64-unknown-linux-gnu' whereas '__uClibc_main.os' is 'x86_64-pc-linux-gnu'
+
+warning: Linking two modules of different target triples: 'klee_overshift_check64_Debug+Asserts.bc' is 'x86_64-unknown-linux-gnu' whereas '__uClibc_main.os' is 'x86_64-pc-linux-gnu'
+
+KLEE: WARNING: undefined reference to function: __syscall_rt_sigaction
+KLEE: WARNING: undefined reference to function: close
+KLEE: WARNING: undefined reference to function: fcntl
+KLEE: WARNING: undefined reference to function: fstat
+KLEE: WARNING: undefined reference to function: ioctl
+KLEE: WARNING: undefined reference to function: lseek64
+KLEE: WARNING: undefined reference to function: open
+KLEE: WARNING: undefined reference to function: read
+KLEE: WARNING: undefined reference to function: select
+KLEE: WARNING: undefined reference to function: time
+KLEE: WARNING: undefined reference to function: write
+KLEE: WARNING: undefined reference to function: kill (UNSAFE)!
+KLEE: WARNING ONCE: calling external: ioctl(0, 21505, 94662646480096) at libc/termios/tcgetattr.c:43 12
+KLEE: WARNING ONCE: calling __user_main with extra arguments.
+
+KLEE: done: total instructions = 13190
+KLEE: done: completed paths = 3
+KLEE: done: partially completed paths = 0
+KLEE: done: generated tests = 3
+
+
+rc=0 seconds=2.2

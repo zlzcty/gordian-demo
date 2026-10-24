@@ -1,0 +1,136 @@
+{
+  "stages": {
+    "partition": {
+      "harnesses": [
+        "/c/TempProjectWork/codex-work-1/gordian/runs/gpt-oss-20b/01_partition/harness_part1.c",
+        "/c/TempProjectWork/codex-work-1/gordian/runs/gpt-oss-20b/01_partition/harness_part2.c",
+        "/c/TempProjectWork/codex-work-1/gordian/runs/gpt-oss-20b/01_partition/harness_part3.c"
+      ],
+      "runs": [
+        {
+          "harness": "harness_part1.c",
+          "round": 0,
+          "ktests": 3,
+          "ok": true
+        },
+        {
+          "harness": "harness_part2.c",
+          "round": 0,
+          "ktests": 3,
+          "ok": true
+        },
+        {
+          "harness": "harness_part3.c",
+          "round": 0,
+          "ktests": 4,
+          "ok": true
+        }
+      ],
+      "seconds": 252
+    }
+  },
+  "target": "lb_float1_fp_l1",
+  "family": "logic_bombs",
+  "backend": "openrouter:openai/gpt-oss-20b",
+  "budget_s": 600.0,
+  "elapsed_s": 261,
+  "coverage": {
+    "covered": 13,
+    "total": 13,
+    "ratio": 1.0,
+    "files": {
+      "benchmarks/logic_bombs_src/floating_point/float1_fp_l1_klee.c": {
+        "covered": 13,
+        "total": 13,
+        "ratio": 1.0
+      }
+    }
+  },
+  "bombs_reached": [],
+  "tests": 11,
+  "suite": [
+    {
+      "group": 0,
+      "harness": null,
+      "ktests": 1,
+      "copied": 1,
+      "source_dirs": [
+        "/c/TempProjectWork/codex-work-1/gordian/runs/gpt-oss-20b/variants/00_explore/klee"
+      ]
+    },
+    {
+      "group": 1,
+      "harness": "/c/TempProjectWork/codex-work-1/gordian/runs/gpt-oss-20b/01_partition/harness_part1.c",
+      "ktests": 3,
+      "copied": 3,
+      "source_dirs": [
+        "/c/TempProjectWork/codex-work-1/gordian/runs/gpt-oss-20b/variants/01_partition_1/klee"
+      ]
+    },
+    {
+      "group": 2,
+      "harness": "/c/TempProjectWork/codex-work-1/gordian/runs/gpt-oss-20b/01_partition/harness_part2.c",
+      "ktests": 3,
+      "copied": 3,
+      "source_dirs": [
+        "/c/TempProjectWork/codex-work-1/gordian/runs/gpt-oss-20b/variants/01_partition_2/klee"
+      ]
+    },
+    {
+      "group": 3,
+      "harness": "/c/TempProjectWork/codex-work-1/gordian/runs/gpt-oss-20b/01_partition/harness_part3.c",
+      "ktests": 4,
+      "copied": 4,
+      "source_dirs": [
+        "/c/TempProjectWork/codex-work-1/gordian/runs/gpt-oss-20b/variants/01_partition_3/klee"
+      ]
+    }
+  ],
+  "history": [
+    {
+      "label": "00_explore",
+      "ktests": 1,
+      "new_lines": 12,
+      "covered": 12,
+      "total": 13,
+      "t": 9,
+      "harness": null
+    },
+    {
+      "label": "01_partition_1",
+      "ktests": 3,
+      "new_lines": 0,
+      "covered": 12,
+      "total": 13,
+      "t": 254,
+      "harness": "/c/TempProjectWork/codex-work-1/gordian/runs/gpt-oss-20b/01_partition/harness_part1.c"
+    },
+    {
+      "label": "01_partition_2",
+      "ktests": 3,
+      "new_lines": 0,
+      "covered": 12,
+      "total": 13,
+      "t": 257,
+      "harness": "/c/TempProjectWork/codex-work-1/gordian/runs/gpt-oss-20b/01_partition/harness_part2.c"
+    },
+    {
+      "label": "01_partition_3",
+      "ktests": 4,
+      "new_lines": 1,
+      "covered": 13,
+      "total": 13,
+      "t": 261,
+      "harness": "/c/TempProjectWork/codex-work-1/gordian/runs/gpt-oss-20b/01_partition/harness_part3.c"
+    }
+  ],
+  "llm_usage": {
+    "input_tokens": 1333,
+    "output_tokens": 23018,
+    "calls": 1,
+    "wall_seconds": 241.17
+  },
+  "uncovered": {
+    "benchmarks/logic_bombs_src/floating_point/float1_fp_l1_klee.c": []
+  }
+}

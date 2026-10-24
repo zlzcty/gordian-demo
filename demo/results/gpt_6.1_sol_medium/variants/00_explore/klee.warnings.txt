@@ -1,0 +1,2 @@
+calling external: syscall(16, 0, 21505, 94428786249808) at klee_src/runtime/POSIX/fd.c:1011 10
+silently concretizing (reason: floating point) expression (Add w32 4294967248

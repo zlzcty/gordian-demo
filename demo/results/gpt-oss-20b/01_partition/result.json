@@ -1,0 +1,27 @@
+{
+  "harnesses": [
+    "/c/TempProjectWork/codex-work-1/gordian/runs/gpt-oss-20b/01_partition/harness_part1.c",
+    "/c/TempProjectWork/codex-work-1/gordian/runs/gpt-oss-20b/01_partition/harness_part2.c",
+    "/c/TempProjectWork/codex-work-1/gordian/runs/gpt-oss-20b/01_partition/harness_part3.c"
+  ],
+  "runs": [
+    {
+      "harness": "harness_part1.c",
+      "round": 0,
+      "ktests": 3,
+      "ok": true
+    },
+    {
+      "harness": "harness_part2.c",
+      "round": 0,
+      "ktests": 3,
+      "ok": true
+    },
+    {
+      "harness": "harness_part3.c",
+      "round": 0,
+      "ktests": 4,
+      "ok": true
+    }
+  ]
+}

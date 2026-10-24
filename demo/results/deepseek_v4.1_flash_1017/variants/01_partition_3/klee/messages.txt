@@ -1,0 +1,4 @@
+KLEE: Using Z3 solver backend
+KLEE: ERROR: runs/float1-nemo-1/01_partition/harness_part3.c:14: invalid klee_assume call (provably false)
+KLEE: ERROR: runs/float1-nemo-1/01_partition/harness_part3.c:21: invalid klee_assume call (provably false)
+KLEE: ERROR: runs/float1-nemo-1/01_partition/harness_part3.c:21: invalid klee_assume call (provably false)

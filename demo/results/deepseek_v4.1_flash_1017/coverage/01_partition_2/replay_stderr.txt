@@ -1,0 +1,3 @@
+KLEE_RUN_TEST_ERROR: invalid klee_assume
+KLEE_RUN_TEST_ERROR: invalid klee_assume
+KLEE_RUN_TEST_ERROR: invalid klee_assume

@@ -1,0 +1,20 @@
+/home/klee/klee_build/bin/klee --output-dir=/gordian/runs/float1-nemo-1/variants/01_partition_3/klee --max-time=45 --max-solver-time=20 --solver-backend=z3 --search=bfs --emit-all-errors --write-cov --watchdog --libc=uclibc --external-calls=all --only-output-states-covering-new /gordian/runs/float1-nemo-1/variants/01_partition_3/build/module_with_harness.bc
+PID: 1986
+Using monotonic steady clock with 1/1000000000s resolution
+Started: 2026-10-24 01:50:44
+BEGIN searcher description
+BFSSearcher
+END searcher description
+Finished: 2026-10-24 01:50:45
+Elapsed: 00:00:01
+KLEE: done: explored paths = 3
+KLEE: done: avg. constructs per query = 12
+KLEE: done: total queries = 12
+KLEE: done: valid queries = 1
+KLEE: done: invalid queries = 11
+KLEE: done: query cex = 12
+
+KLEE: done: total instructions = 13190
+KLEE: done: completed paths = 3
+KLEE: done: partially completed paths = 0
+KLEE: done: generated tests = 3

@@ -1,0 +1,1 @@
+calling external: syscall(16, 0, 21505, 94778341287568) at klee_src/runtime/POSIX/fd.c:1011 10

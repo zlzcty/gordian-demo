@@ -1,0 +1,18 @@
+/gordian/runs/float1-nemo-1/02_rewrite/float1_fp_l1_klee.model.c:1:1: error: expected identifier or '('
+```
+^
+In file included from /gordian/runs/float1-nemo-1/02_rewrite/float1_fp_l1_klee.model.c:4:
+In file included from /usr/include/stdlib.h:395:
+/usr/include/x86_64-linux-gnu/sys/types.h:33:9: error: unknown type name '__u_char'
+typedef __u_char u_char;
+        ^
+/gordian/runs/float1-nemo-1/02_rewrite/float1_fp_l1_klee.model.c:10:37: error: too many arguments to function call, expected single argument 'n', have 3 arguments
+    uint64_t a_int = klee_choose(0, 100, "a_int");
+                     ~~~~~~~~~~~    ^~~~~~~~~~~~
+/usr/include/klee/klee.h:87:13: note: 'klee_choose' declared here
+  uintptr_t klee_choose(uintptr_t n);
+            ^
+/gordian/runs/float1-nemo-1/02_rewrite/float1_fp_l1_klee.model.c:15:41: error: cannot take the address of an rvalue of type 'float'
+        uint64_t diff_int = *(uint64_t*)&(a - b);
+                                        ^ ~~~~~
+4 errors generated.

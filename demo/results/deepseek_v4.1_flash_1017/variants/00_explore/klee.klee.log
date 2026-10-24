@@ -1,0 +1,47 @@
+$ timeout -s INT -k 15 70 /home/klee/klee_build/bin/klee --output-dir=/gordian/runs/float1-nemo-1/variants/00_explore/klee --max-time=60 --max-solver-time=2 --solver-backend=z3 --search=bfs --emit-all-errors --write-cov --watchdog --libc=uclibc --posix-runtime --external-calls=all /gordian/runs/float1-nemo-1/variants/00_explore/build/module.bc
+
+[stdout]
+
+
+[stderr]
+KLEE: KLEE: WATCHDOG: watching 1042
+
+KLEE: NOTE: Using POSIX model: /tmp/klee_build130stp_z3/runtime/lib/libkleeRuntimePOSIX64_Debug+Asserts.bca
+KLEE: NOTE: Using klee-uclibc : /tmp/klee_build130stp_z3/runtime/lib/klee-uclibc.bca
+KLEE: output directory is "/gordian/runs/float1-nemo-1/variants/00_explore/klee"
+KLEE: Using Z3 solver backend
+warning: Linking two modules of different target triples: 'fd64_Debug+Asserts.bc' is 'x86_64-unknown-linux-gnu' whereas '__uClibc_main.os' is 'x86_64-pc-linux-gnu'
+
+warning: Linking two modules of different target triples: 'fd_3264_Debug+Asserts.bc' is 'x86_64-unknown-linux-gnu' whereas '__uClibc_main.os' is 'x86_64-pc-linux-gnu'
+
+warning: Linking two modules of different target triples: 'klee_init_env64_Debug+Asserts.bc' is 'x86_64-unknown-linux-gnu' whereas '__uClibc_main.os' is 'x86_64-pc-linux-gnu'
+
+warning: Linking two modules of different target triples: '/gordian/runs/float1-nemo-1/variants/00_explore/build/module.bc' is 'x86_64-unknown-linux-gnu' whereas '__uClibc_main.os' is 'x86_64-pc-linux-gnu'
+
+warning: Linking two modules of different target triples: 'fd_init64_Debug+Asserts.bc' is 'x86_64-unknown-linux-gnu' whereas '__uClibc_main.os' is 'x86_64-pc-linux-gnu'
+
+warning: Linking two modules of different target triples: 'stubs64_Debug+Asserts.bc' is 'x86_64-unknown-linux-gnu' whereas '__uClibc_main.os' is 'x86_64-pc-linux-gnu'
+
+warning: Linking two modules of different target triples: 'klee_range64_Debug+Asserts.bc' is 'x86_64-unknown-linux-gnu' whereas '__uClibc_main.os' is 'x86_64-pc-linux-gnu'
+
+warning: Linking two modules of different target triples: 'fd_6464_Debug+Asserts.bc' is 'x86_64-unknown-linux-gnu' whereas '__uClibc_main.os' is 'x86_64-pc-linux-gnu'
+
+warning: Linking two modules of different target triples: 'illegal64_Debug+Asserts.bc' is 'x86_64-unknown-linux-gnu' whereas '__uClibc_main.os' is 'x86_64-pc-linux-gnu'
+
+warning: Linking two modules of different target triples: 'klee_div_zero_check64_Debug+Asserts.bc' is 'x86_64-unknown-linux-gnu' whereas '__uClibc_main.os' is 'x86_64-pc-linux-gnu'
+
+warning: Linking two modules of different target triples: 'klee_overshift_check64_Debug+Asserts.bc' is 'x86_64-unknown-linux-gnu' whereas '__uClibc_main.os' is 'x86_64-pc-linux-gnu'
+
+KLEE: WARNING ONCE: calling external: syscall(16, 0, 21505, 94100123521248) at klee_src/runtime/POSIX/fd.c:1011 10
+KLEE: WARNING ONCE: Alignment of memory from call "malloc" is not modelled. Using alignment of 8.
+KLEE: WARNING ONCE: calling __klee_posix_wrapped_main with extra arguments.
+KLEE: WARNING ONCE: silently concretizing (reason: floating point) expression (Add w32 4294967248
+          (SExt w32 (Read w8 0 s))) to value 4294967248 (benchmarks/logic_bombs_src/floating_point/float1_fp_l1_klee.c:9)
+
+KLEE: done: total instructions = 14067
+KLEE: done: completed paths = 1
+KLEE: done: partially completed paths = 0
+KLEE: done: generated tests = 1
+
+
+rc=0 seconds=2.1

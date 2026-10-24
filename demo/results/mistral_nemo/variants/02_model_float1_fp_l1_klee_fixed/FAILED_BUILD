@@ -1,0 +1,10 @@
+/gordian/runs/float1-nemo-1/02_rewrite/float1_fp_l1_klee.model.fixed.c:9:39: error: too many arguments to function call, expected single argument 'n', have 2 arguments
+    uint64_t a_int = klee_choose(100, "a_int");
+                     ~~~~~~~~~~~      ^~~~~~~
+/usr/include/klee/klee.h:87:13: note: 'klee_choose' declared here
+  uintptr_t klee_choose(uintptr_t n);
+            ^
+/gordian/runs/float1-nemo-1/02_rewrite/float1_fp_l1_klee.model.fixed.c:14:41: error: cannot take the address of an rvalue of type 'float'
+        uint64_t diff_int = *(uint64_t*)&(a - b);
+                                        ^ ~~~~~
+2 errors generated.
