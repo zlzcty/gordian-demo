@@ -12,6 +12,8 @@ from ..docker import Container
 from ..log import configure
 from .model import api_key, endpoint_config, make_client
 from .workflow import run_demo
+from .stages import execute_stage
+from .checks import run_checks
 
 
 def positive_int(value: str) -> int:
@@ -22,12 +24,18 @@ def positive_int(value: str) -> int:
 
 
 def parser() -> argparse.ArgumentParser:
-    result = argparse.ArgumentParser(description="One-example KLEE / Gordian trig demo (linked FDLibM)")
+    result = argparse.ArgumentParser(description="Modular KLEE / Gordian demo")
+    result.add_argument("stage", nargs="?", choices=("baseline", "generate", "assisted", "check"),
+                        help="independent demo stage (omit for legacy combined flow)")
+    result.add_argument("--target", type=Path, help="target JSON (default: demos/trig/target.json)")
+    result.add_argument("--from-run", type=Path, help="completed baseline (generate) or generation (assisted) directory")
+    result.add_argument("--check-model", action="store_true", help="also check endpoint/model/key settings")
+    result.add_argument("--probe-model", action="store_true", help="also check model listing at the endpoint; no completion")
     result.add_argument("--root", type=Path, help="repository root containing gordian.yaml")
     result.add_argument("--provider", choices=("openrouter", "deepinfra", "custom"), default="openrouter")
     result.add_argument("--base-url", help="OpenAI-compatible API base, including its v1 path")
     result.add_argument("--key-env", help="environment variable holding your key; the value is never saved")
-    result.add_argument("--model", help="exact endpoint model ID; required unless --baseline-only")
+    result.add_argument("--model", help="exact endpoint model ID; required for generate or the combined flow")
     result.add_argument("--request-seconds", type=positive_int, default=60, help="SDK request timeout; retries disabled")
     result.add_argument("--klee-seconds", type=positive_int, default=10, help="budget for EACH KLEE run")
     result.add_argument("--solver-seconds", type=positive_int, default=2)
@@ -49,6 +57,10 @@ def wait_for_enter(prompt: str) -> None:
 def run_from_args(args, environment: dict[str, str], emit, pause) -> int:
     settings = load_settings(args.root)
     root = settings.project_root.resolve()
+    if args.stage:
+        return run_stage_from_args(args, settings, environment, emit)
+    if args.target or args.from_run:
+        raise ValueError("--target and --from-run require a stage")
     name = args.name or time.strftime("trig-demo_%Y%m%d-%H%M%S")
     if name in (".", "..") or "/" in name or "\\" in name:
         raise ValueError("--name must be one directory name")
@@ -74,6 +86,61 @@ def run_from_args(args, environment: dict[str, str], emit, pause) -> int:
         if client is not None:
             client.close()
     return 0 if report["status"] in ("improved", "baseline_only", "baseline_already_succeeds") else 1
+
+
+def stage_directory(args, settings) -> Path:
+    name = args.name or time.strftime(f"demo-{args.stage}_%Y%m%d-%H%M%S")
+    if name in (".", "..") or "/" in name or "\\" in name:
+        raise ValueError("--name must be one directory name")
+    directory = (settings.runs / name).resolve()
+    directory.relative_to(settings.project_root.resolve())
+    return directory
+
+
+def validate_stage_args(args) -> None:
+    if args.pause or args.baseline_only:
+        raise ValueError("separate stages do not use --pause or --baseline-only")
+    if args.stage in ("generate", "assisted") and args.from_run is None:
+        raise ValueError("--from-run is required for generate and assisted")
+    if args.stage in ("generate", "assisted") and args.target:
+        raise ValueError("later stages use the target snapshot from --from-run")
+    if args.stage == "baseline" and args.from_run:
+        raise ValueError("baseline starts from --target, not --from-run")
+    if args.stage == "generate" and not args.model:
+        raise ValueError("--model is required for generate")
+
+
+def stage_options(args) -> dict:
+    return dict(model=args.model, provider=args.provider, request_seconds=args.request_seconds,
+                klee_seconds=args.klee_seconds, solver_seconds=args.solver_seconds,
+                replay_seconds=args.replay_seconds, max_tests=args.max_tests)
+
+
+def stage_client(args, environment, options):
+    if args.stage != "generate":
+        return None
+    url, name = endpoint_config(args.provider, args.base_url, args.key_env)
+    options.update(base_url=url, key_env=name)
+    return make_client(url, api_key(environment, name), args.request_seconds)
+
+
+def run_stage_from_args(args, settings, environment, emit) -> int:
+    validate_stage_args(args)
+    container = Container(settings, settings.std, is_float=False)
+    if args.stage == "check":
+        return run_checks(args, settings, container, environment, emit)
+    options = stage_options(args)
+    client = stage_client(args, environment, options)
+    try:
+        report = execute_stage(args.stage, container, settings.project_root.resolve(),
+                               stage_directory(args, settings),
+                               args.from_run.resolve() if args.from_run else None,
+                               (args.target or settings.project_root / "demos/trig/target.json").resolve(),
+                               options, client, emit)
+    finally:
+        if client is not None:
+            client.close()
+    return 1 if report["status"] in ("incomplete", "error", "interrupted") else 0
 
 
 def main(argv: list[str] | None = None) -> int:

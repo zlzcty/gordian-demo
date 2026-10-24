@@ -1,0 +1,50 @@
+{
+  "driver": "driver.c",
+  "guard": "guard.inc",
+  "library": "../../benchmarks/fdlibm_lib",
+  "sources": [
+    "s_sin.c",
+    "s_cos.c",
+    "k_sin.c",
+    "k_cos.c",
+    "e_rem_pio2.c",
+    "k_rem_pio2.c",
+    "s_fabs.c",
+    "s_floor.c",
+    "s_scalbn.c",
+    "s_copysign.c"
+  ],
+  "headers": [
+    "fdlibm.h"
+  ],
+  "cflags": [
+    "-std=c11",
+    "-fno-builtin",
+    "-fno-strict-aliasing",
+    "-ffp-contract=off",
+    "-D__LITTLE_ENDIAN",
+    "-Dsin=gordian_fdlibm_sin",
+    "-Dcos=gordian_fdlibm_cos",
+    "-D__kernel_sin=gordian_fdlibm___kernel_sin",
+    "-D__kernel_cos=gordian_fdlibm___kernel_cos",
+    "-D__ieee754_rem_pio2=gordian_fdlibm___ieee754_rem_pio2",
+    "-D__kernel_rem_pio2=gordian_fdlibm___kernel_rem_pio2",
+    "-Dfabs=gordian_fdlibm_fabs",
+    "-Dfloor=gordian_fdlibm_floor",
+    "-Dscalbn=gordian_fdlibm_scalbn",
+    "-Dcopysign=gordian_fdlibm_copysign"
+  ],
+  "function": "trig_branch",
+  "input": {
+    "name": "a0",
+    "format": "binary64-le",
+    "min": 2,
+    "max": 6
+  },
+  "replay_prefix": "GORDIAN_TRIG",
+  "outcomes": [
+    1,
+    2
+  ],
+  "instructions": "This is a reduced FDLibM j0 guard with actual linked sine/cosine implementations. Use sin(x)*cos(x)=sin(2*x)/2 to derive safe sign intervals. Return 1 for a negative product and 2 for a nonnegative product. Headers stdint.h, string.h and klee/klee.h are already provided. Positive finite binary64 encodings sort as unsigned integers. Avoid trigonometric zeros and rounding boundaries when restricting the domain."
+}

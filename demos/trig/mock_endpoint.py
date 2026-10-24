@@ -9,6 +9,10 @@ from wsgiref.simple_server import make_server
 
 def completion_app(response: str):
     def respond(environ, start_response):
+        if environ["REQUEST_METHOD"] == "GET" and environ["PATH_INFO"] == "/v1/models":
+            start_response("200 OK", [("Content-Type", "application/json")])
+            return [json.dumps(dict(object="list", data=[dict(
+                id="rehearsal-mock", object="model", created=0, owned_by="local-mock")])).encode()]
         if environ["REQUEST_METHOD"] != "POST" or environ["PATH_INFO"] != "/v1/chat/completions":
             start_response("404 Not Found", [("Content-Type", "text/plain")])
             return [b"Use POST /v1/chat/completions\n"]

@@ -12,6 +12,7 @@ from ..ktest import read_ktest, write_ktest
 from ..targets import Target
 from .example import input_value, replay_outcome
 from .fdlibm import compile_flags, source_paths
+from .target import decode_input, decode_replay
 
 
 def require_prepared_container(container: Container) -> None:
@@ -30,13 +31,22 @@ def prepare_variant(directory: Path, driver: str, guard: str) -> Path:
     return directory / "driver.c"
 
 
+def library_build(directory: Path) -> tuple[list[Path], list[str]]:
+    manifest = directory / "manifest.json"
+    if not manifest.exists():
+        return source_paths(directory), compile_flags()
+    spec = json.loads(manifest.read_text())
+    return [directory / name for name in spec["sources"]], spec["compile_flags"]
+
+
 def variant_target(root: Path, driver: Path, library: Path) -> Target:
     relative = str(driver.relative_to(root))
-    sources = [relative] + [str(path.relative_to(root)) for path in source_paths(library)]
+    helpers, flags = library_build(library)
+    sources = [relative] + [str(path.relative_to(root)) for path in helpers]
     return Target(name="demo_trig", sources=sources, coverage_files=[relative],
                   include_dirs=[str(library.relative_to(root))],
                   family="demo", libc="none", posix_runtime=False, external_calls="none",
-                  cflags=compile_flags())
+                  cflags=flags)
 
 
 def explore_variant(container: Container, root: Path, driver: Path, directory: Path,
@@ -67,9 +77,10 @@ def build_original_replay(container: Container, driver: Path, directory: Path, l
     directory.mkdir(parents=True, exist_ok=True)
     executable = directory / "original-replay"
     tools = container.tools
-    command = [tools.clang, *compile_flags(), "-O0", "-DDEMO_REPLAY",
+    helpers, flags = library_build(library)
+    command = [tools.clang, *flags, "-O0", "-DDEMO_REPLAY",
                "-I" + tools.klee_include, "-I" + container.path(library),
-               container.path(driver), *[container.path(path) for path in source_paths(library)],
+               container.path(driver), *[container.path(path) for path in helpers],
                "-L" + tools.klee_runtest_lib, "-Wl,-rpath," + tools.klee_runtest_lib,
                "-lkleeRuntest", "-o", container.path(executable)]
     result = container.exec(command, timeout=60)
@@ -80,12 +91,13 @@ def build_original_replay(container: Container, driver: Path, directory: Path, l
 
 
 def replay_test(container: Container, executable: Path, ktest: Path,
-                directory: Path, timeout_s: int) -> dict:
+                directory: Path, timeout_s: int, target: dict | None = None) -> dict:
     """Treat only a successful native observation of the original guard as evidence."""
     objects = read_ktest(ktest)
-    value = input_value(objects)
+    value = decode_input(objects, target) if target else input_value(objects)
+    input_name = target["input"]["name"] if target else "a0"
     normalized = directory / ktest.name
-    write_ktest(normalized, [obj for obj in objects if obj["name"] == "a0"])
+    write_ktest(normalized, [obj for obj in objects if obj["name"] == input_name])
     command = ["timeout", str(timeout_s), "env", "KTEST_FILE=" + container.path(normalized),
                container.path(executable)]
     result = container.exec(command, cwd=container.path(directory), timeout=timeout_s + 5)
@@ -93,9 +105,9 @@ def replay_test(container: Container, executable: Path, ktest: Path,
         result.stdout + result.stderr + f"\nexit={result.returncode}\n")
     if result.returncode:
         raise ValueError(f"native replay failed with exit {result.returncode}")
-    outcome = replay_outcome(result.stdout, value)
+    outcome = decode_replay(result.stdout, value, target) if target else replay_outcome(result.stdout, value)
     return dict(test=str(ktest), replay_test=str(normalized), x=value,
-                input_hex=input_bytes(objects).hex(), outcome=outcome)
+                input_hex=next(obj["bytes"] for obj in objects if obj["name"] == input_name).hex(), outcome=outcome)
 
 
 def input_bytes(objects: list[dict]) -> bytes:
@@ -104,12 +116,12 @@ def input_bytes(objects: list[dict]) -> bytes:
 
 def replay_tests(container: Container, executable: Path, ktests: list[Path],
                  directory: Path, timeout_s: int, max_tests: int,
-                 emit: Callable[[str], None]) -> list[dict]:
+                 emit: Callable[[str], None], target: dict | None = None) -> list[dict]:
     directory.mkdir(parents=True, exist_ok=True)
     observations = []
     for path in ktests[:max_tests]:
         try:
-            row = replay_test(container, executable, path, directory, timeout_s)
+            row = replay_test(container, executable, path, directory, timeout_s, target)
             emit(f"ORIGINAL REPLAY: x={row['x']:.17g} -> outcome {row['outcome']}")
         except (ValueError, OSError, struct.error) as exc:
             row = dict(test=str(path), error=str(exc))
