@@ -1,0 +1,493 @@
+<title>Gordian Float Bomb Showdown</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Layout: a single reading column (~68ch) with wider bands for charts and tables; verdicts up top, evidence below. */
+:root {
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --ink: #15181e;
+  --ink-2: #4a5161;
+  --muted: #6c7484;
+  --rule: #dfe3ea;
+  --grid: #e9ecf1;
+  --code-bg: #eef1f5;
+  --hl: #fdecc8;
+  --accent: #1f5bbf;
+  --agent: #2a78d6;
+  --api: #eb6834;
+  --good: #17773f;
+  --good-bg: #e2f3e8;
+  --bad: #b8322b;
+  --bad-bg: #fbe6e4;
+  --font-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111419; --surface: #181c23; --ink: #eceef2; --ink-2: #b5bcc9; --muted: #8790a1;
+    --rule: #2b313b; --grid: #232831; --code-bg: #1e232b; --hl: #4a3a14; --accent: #7fa9f2;
+    --agent: #3987e5; --api: #d95926; --good: #57c787; --good-bg: #16301f; --bad: #f2776f; --bad-bg: #3a1c1a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111419; --surface: #181c23; --ink: #eceef2; --ink-2: #b5bcc9; --muted: #8790a1;
+  --rule: #2b313b; --grid: #232831; --code-bg: #1e232b; --hl: #4a3a14; --accent: #7fa9f2;
+  --agent: #3987e5; --api: #d95926; --good: #57c787; --good-bg: #16301f; --bad: #f2776f; --bad-bg: #3a1c1a;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+}
+.wrap {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding-block: 40px 72px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+}
+section { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.prose { max-width: 68ch; display: flex; flex-direction: column; gap: 12px; }
+p { margin: 0; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 1.6rem; font-weight: 600; }
+h3 { font-size: 1.15rem; font-weight: 600; }
+.eyebrow {
+  font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--muted);
+}
+.lede { font-size: 1.15rem; color: var(--ink-2); max-width: 64ch; }
+code, .mono { font-family: var(--font-mono); font-size: 0.88em; }
+:not(pre) > code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+a { color: var(--accent); }
+a:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.muted { color: var(--muted); }
+.small { font-size: 0.875rem; }
+
+header.top { display: flex; flex-direction: column; gap: 14px; border-bottom: 1px solid var(--rule); padding-bottom: 32px; }
+.meta-row { display: flex; flex-wrap: wrap; gap: 8px 24px; font-family: var(--font-mono); font-size: 0.8rem; color: var(--muted); }
+
+/* verdicts */
+.verdicts { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.verdict { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.verdict.best { border-top: 4px solid var(--good); }
+.verdict.worst { border-top: 4px solid var(--bad); }
+.verdict .who { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; line-height: 1.1; }
+.verdict ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 4px; color: var(--ink-2); }
+.pill {
+  display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
+  font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 999px; font-weight: 500;
+}
+.pill.good { background: var(--good-bg); color: var(--good); }
+.pill.bad { background: var(--bad-bg); color: var(--bad); }
+.pill .ico { font-size: 0.85rem; line-height: 1; }
+
+/* pipeline */
+.pipeline { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; counter-reset: stage; }
+.stage { border-left: 2px solid var(--rule); padding: 4px 0 4px 14px; display: flex; flex-direction: column; gap: 4px; }
+.stage .num { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); }
+.stage b { font-family: var(--font-display); font-size: 1.05rem; }
+.stage p { font-size: 0.9rem; color: var(--ink-2); }
+
+/* code */
+.codebox { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; overflow-x: auto; }
+.codebox pre { margin: 0; padding: 14px 0; font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.65; min-width: max-content; }
+.codebox .ln { display: block; padding: 0 18px 0 0; }
+.codebox .ln::before { content: attr(data-n); display: inline-block; width: 3.2em; padding-right: 1em; text-align: right; color: var(--muted); }
+.codebox .ln.hit { background: var(--hl); }
+.codebox .tag { font-family: var(--font-body); font-size: 0.75rem; color: var(--ink-2); margin-left: 12px; }
+.two-col { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+@media (max-width: 820px) { .two-col { grid-template-columns: minmax(0, 1fr); } }
+
+/* glossary */
+dl.gloss { display: grid; grid-template-columns: minmax(150px, max-content) minmax(0, 1fr); gap: 10px 22px; margin: 0; }
+dl.gloss dt { font-family: var(--font-mono); font-size: 0.85rem; font-weight: 500; padding-top: 2px; }
+dl.gloss dd { margin: 0; color: var(--ink-2); }
+@media (max-width: 560px) { dl.gloss { grid-template-columns: minmax(0, 1fr); gap: 2px; } dl.gloss dd { margin-bottom: 10px; } }
+
+/* charts */
+.chart-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 20px 20px 14px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.chart-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 20px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.85rem; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.sw.agent { background: var(--agent); }
+.sw.api { background: var(--api); }
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 16px; }
+@media (max-width: 480px) { .charts { grid-template-columns: minmax(0, 1fr); } }
+.bars { --label-w: 9.5rem; display: flex; flex-direction: column; gap: 2px; position: relative; }
+.bar-row { display: grid; grid-template-columns: var(--label-w) minmax(0, 1fr); align-items: center; gap: 10px; min-height: 30px; border-radius: 4px; cursor: default; }
+.bar-row:hover .bar-label, .bar-row:focus-visible .bar-label { color: var(--ink); }
+.bar-row:hover .track, .bar-row:focus-visible .track { background: color-mix(in srgb, var(--grid) 60%, transparent); }
+.bar-label { font-size: 0.85rem; color: var(--ink-2); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.track { position: relative; height: 30px; border-radius: 4px; }
+.bar { position: absolute; left: 0; top: 8px; height: 14px; border-radius: 0 4px 4px 0; }
+.bar.agent { background: var(--agent); }
+.bar.api { background: var(--api); }
+.bar-val { position: absolute; top: 50%; transform: translateY(-50%); font-family: var(--font-mono); font-size: 0.76rem; color: var(--ink); white-space: nowrap; padding-left: 6px; font-variant-numeric: tabular-nums; }
+.bar-val.none { color: var(--bad); padding-left: 0; }
+.gridline { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--grid); }
+.gridline.base { background: var(--rule); }
+.axis { display: grid; grid-template-columns: var(--label-w) minmax(0, 1fr); gap: 10px; }
+.axis .ticks { position: relative; height: 18px; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); }
+.axis .ticks span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+.axis .ticks span:first-child { transform: none; }
+.plot-bg { position: absolute; top: 0; bottom: 0; right: 0; pointer-events: none; }
+.chart-note { font-size: 0.85rem; color: var(--muted); max-width: 72ch; }
+.tip {
+  position: fixed; z-index: 20; pointer-events: none; max-width: 280px;
+  background: var(--surface); color: var(--ink); border: 1px solid var(--rule); border-radius: 8px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.14); padding: 10px 12px; font-size: 0.8rem; line-height: 1.45;
+}
+.tip b { font-family: var(--font-display); font-size: 0.95rem; }
+.tip .kv { display: grid; grid-template-columns: auto auto; gap: 1px 14px; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.tip .kv span:nth-child(odd) { color: var(--muted); }
+.tip .kv span:nth-child(even) { font-family: var(--font-mono); text-align: right; }
+
+/* model cards */
+.cards { display: flex; flex-direction: column; gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 20px 22px; display: grid; grid-template-columns: 3rem minmax(0, 1fr) minmax(0, 300px); gap: 8px 22px; }
+.card .rank { font-family: var(--font-display); font-size: 2rem; font-weight: 700; color: var(--muted); line-height: 1; }
+.card .body { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.card .title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+.card .spec { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); overflow-wrap: anywhere; }
+.card .body p { color: var(--ink-2); font-size: 0.95rem; }
+.kind { font-size: 0.78rem; color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; }
+.stats { display: grid; grid-template-columns: auto auto; gap: 3px 14px; align-content: start; font-size: 0.82rem; border-left: 1px solid var(--rule); padding-left: 18px; }
+.stats span:nth-child(odd) { color: var(--muted); }
+.stats span:nth-child(even) { font-family: var(--font-mono); text-align: right; font-variant-numeric: tabular-nums; }
+.steps { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.step { font-family: var(--font-mono); font-size: 0.72rem; border: 1px solid var(--rule); border-radius: 4px; padding: 2px 7px; color: var(--muted); }
+.step.win { border-color: var(--good); color: var(--good); }
+.step.fail { border-color: var(--bad); color: var(--bad); }
+@media (max-width: 760px) {
+  .card { grid-template-columns: 2.2rem minmax(0, 1fr); }
+  .card .stats { grid-column: 1 / -1; border-left: 0; padding-left: 0; border-top: 1px solid var(--rule); padding-top: 10px; }
+}
+
+/* table */
+.table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; font-size: 0.85rem; min-width: 900px; }
+th, td { padding: 9px 12px; text-align: right; border-bottom: 1px solid var(--rule); white-space: nowrap; font-variant-numeric: tabular-nums; }
+th:first-child, td:first-child { text-align: left; }
+th { font-family: var(--font-mono); font-size: 0.7rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+tbody tr:last-child td { border-bottom: 0; }
+td.bad { color: var(--bad); font-weight: 600; }
+
+.caveats { display: flex; flex-direction: column; gap: 10px; max-width: 72ch; color: var(--ink-2); padding-left: 1.1em; margin: 0; }
+footer { font-size: 0.8rem; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 18px; }
+@media (prefers-reduced-motion: no-preference) { .bar { transition: width 0.5s ease-out; } }
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <div class="eyebrow">Gordian · target lb_float1_fp_l1 · 600 s budget</div>
+  <h1>Seven LLMs vs. one floating-point logic bomb</h1>
+  <p class="lede">We ran Gordian's <code>lb_float1_fp_l1</code> benchmark with seven different models writing the ghost code. Six reached full coverage. They differed a lot in how fast they got there and how many tokens it took.</p>
+  <div class="meta-row">
+    <span>Claude Opus 5.5 · Sonnet 5.5 · Haiku 5.5</span>
+    <span>GPT-6.1 Sol (Codex)</span>
+    <span>DeepSeek V4.1 Flash · gpt-oss-20b · Mistral Nemo</span>
+  </div>
+</header>
+
+<section aria-labelledby="verdict-h">
+  <h2 id="verdict-h">The verdict</h2>
+  <div class="verdicts">
+    <article class="verdict best">
+      <span class="pill good"><span class="ico" aria-hidden="true">▲</span> Best overall</span>
+      <div class="who">DeepSeek V4.1 Flash</div>
+      <ul>
+        <li>13/13 lines in <b>43 s</b> end to end, the fastest run. The bomb line was covered by the first harness, at 32 s.</li>
+        <li>One API call of 19.8 s using <b>9,481 tokens</b> in total. The Claude Code runs used 440K to 1.5M.</li>
+        <li>Its first harness fixed <code>s[0] = '7'</code> before any float math ran. That is exactly the input the bomb needs.</li>
+      </ul>
+    </article>
+    <article class="verdict worst">
+      <span class="pill bad"><span class="ico" aria-hidden="true">▼</span> Worst</span>
+      <div class="who">Mistral Nemo</div>
+      <ul>
+        <li>The only model that <b>missed the bomb</b>: 12/13 lines (92.3%). Line 13 was never covered.</li>
+        <li>Its harnesses tried <code>s[0]</code> = '1', '2', '3' and then constrained <code>s[1]</code> and <code>s[2]</code>, bytes the function never reads. It never tried '7'.</li>
+        <li>The fallback surrogate model failed to compile, and so did its repair. Gordian ran out of ideas.</li>
+      </ul>
+    </article>
+  </div>
+  <p class="small muted">Ranking rule: coverage first, then time until 13/13, then LLM effort (tokens, turns). Six models tie on coverage, so speed and efficiency decide the order.</p>
+</section>
+
+<section aria-labelledby="what-h">
+  <div class="prose">
+    <div class="eyebrow">Background</div>
+    <h2 id="what-h">What Gordian is</h2>
+    <p>Gordian is a layer on top of <b>KLEE</b>, a symbolic execution engine that explores a C program's paths and generates test inputs for them. KLEE struggles with code that is hard for its constraint solver: floating-point math, crypto, heap shapes, parsers. Gordian has an LLM write <b>ghost code</b>, temporary scaffolding that makes those spots tractable. KLEE then explores the scaffolded program, and every test it produces is <b>replayed on the unmodified program</b>. Only coverage measured on the original code counts.</p>
+    <p>A run moves through four stages. Each stage only works on what is still uncovered, so a run that hits 100% early skips the rest.</p>
+  </div>
+  <div class="pipeline">
+    <div class="stage"><span class="num">stage 0</span><b>Explore</b><p>A short plain-KLEE run on the original program. It finds the uncovered lines.</p></div>
+    <div class="stage"><span class="num">stage 1</span><b>Partition</b><p>The LLM writes 3 harnesses. Each splits the input into a few concrete "classes" chosen to reach the uncovered lines.</p></div>
+    <div class="stage"><span class="num">stage 2</span><b>Rewrite</b><p>The LLM triages what is left and writes a solver-friendly surrogate of the hard code.</p></div>
+    <div class="stage"><span class="num">stage 3</span><b>Inversion</b><p>For invertible computations: replace the code with a havoc and solve backwards from the target.</p></div>
+  </div>
+</section>
+
+<section aria-labelledby="bomb-h">
+  <div class="two-col">
+    <div class="prose">
+      <div class="eyebrow">The target</div>
+      <h2 id="bomb-h">Why this bomb is hard</h2>
+      <p><code>lb_float1_fp_l1</code> is a "logic bomb" from the LogicBombs suite. The goal is to reach <code>return BOMB_ENDING</code> on line 13.</p>
+      <p>Only one input works: <code>s[0] == '7'</code>. Then <code>7/70.0</code> is the double 0.1, which rounds to the float <code>0.100000001490116…</code>. That float is <em>not</em> equal to the double <code>0.1</code>, so the outer <code>if</code> passes. But <code>a - b</code> subtracts two identical floats and gives 0, so the bomb fires.</p>
+      <p>Standard KLEE picks one concrete value for a symbolic number as soon as it reaches floating-point math. So the explore stage tries a single <code>s[0]</code>, takes the normal path, and covers <b>12 of 13</b> lines in about 10 s. To win, the LLM has to notice that <code>'7'</code> is the magic byte and pin it in a harness <em>before</em> the float operations run.</p>
+    </div>
+    <div class="codebox" role="region" aria-label="Source of float1_fp_l1_klee.c" tabindex="0">
+<pre><span class="ln" data-n="6">// {"s":{"length": 4}}</span><span class="ln" data-n="7">int logic_bomb(char* s) {</span><span class="ln" data-n="8">    int symvar = s[0] - 48;</span><span class="ln" data-n="9">    float a = symvar/70.0;</span><span class="ln" data-n="10">    float b = 0.1;</span><span class="ln" data-n="11">    if(a != 0.1){</span><span class="ln" data-n="12">        if(a - b == 0)</span><span class="ln hit" data-n="13">            return BOMB_ENDING;<span class="tag">← the one line explore can't reach</span></span><span class="ln" data-n="14">    }</span><span class="ln" data-n="15">    return NORMAL_ENDING;</span><span class="ln" data-n="16">}</span><span class="ln" data-n="17"></span><span class="ln" data-n="18">int main(int argc, char** argv) {</span><span class="ln" data-n="19">    char s[5];</span><span class="ln" data-n="20">    klee_make_symbolic(&amp;s, sizeof(s), "s");</span><span class="ln" data-n="21">    klee_assume(s[4]=='\0');</span><span class="ln" data-n="22">    return logic_bomb(s);</span><span class="ln" data-n="23">}</span></pre>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="read-h">
+  <div class="prose">
+    <div class="eyebrow">Reading a report</div>
+    <h2 id="read-h">What each result means</h2>
+    <p>Every run folder has a <code>report.md</code>. These are its fields.</p>
+  </div>
+  <dl class="gloss">
+    <dt>line coverage</dt><dd>Lines of the original <code>float1_fp_l1_klee.c</code> executed by the replayed tests. 13 lines are coverable, so <b>13/13</b> means the bomb line ran and <b>12/13</b> means it never did.</dd>
+    <dt>test cases</dt><dd>The number of KLEE test inputs (<code>.ktest</code> files) kept across all stages. More is not better here. Six cases are enough if one of them has <code>s[0]='7'</code>.</dd>
+    <dt>bombs reached: 0</dt><dd>This is 0 for every run, including the winners, and it is not a failure. The counter only picks up a <code>GORDIAN_BOMB_REACHED</code> marker printed during replay. This bomb signals by returning <code>BOMB_ENDING</code> (3) instead, so covering line 13 is the proof that it fired.</dd>
+    <dt>LLM usage</dt><dd>Input and output tokens summed over all LLM calls in the run. <code>calls</code> counts Gordian tasks, not agent turns. One Claude Code task can be 5 to 20 turns.</dd>
+    <dt>00_explore</dt><dd>The plain-KLEE baseline. It gave 1 test and 12/13 lines in every run.</dd>
+    <dt>01_partition_N</dt><dd>KLEE run on the LLM's harness number N. <code>ktests</code> = tests it produced; <code>new lines</code> = lines no earlier step covered; <code>t</code> = seconds since the run started.</dd>
+    <dt>02_model_*</dt><dd>The rewrite stage's surrogate model. It only appears for Mistral Nemo, the one run where partitioning failed. <code>build failed</code> means the generated C did not compile.</dd>
+    <dt>triage</dt><dd>The LLM's routing of each leftover region to <code>model</code> or <code>inversion</code>, with a confidence score and a reason.</dd>
+  </dl>
+</section>
+
+<section aria-labelledby="charts-h">
+  <div class="prose">
+    <div class="eyebrow">Charts</div>
+    <h2 id="charts-h">Tokens and time</h2>
+    <p>The token gap is mostly about <b>how the model was driven</b>. Claude Code and Codex are <span class="kind"><span class="sw agent"></span>agent backends</span>. They read files, run shell commands and re-send their whole context each turn. OpenRouter models are <span class="kind"><span class="sw api"></span>single-shot API calls</span>. They get one ~1.3K-token prompt and answer once. The token axes use a log scale because the values span three orders of magnitude.</p>
+  </div>
+  <div class="charts">
+    <div class="chart-card">
+      <div class="chart-head"><h3>Input tokens</h3><div class="legend"><span><i class="sw agent"></i>Agent (Claude Code / Codex)</span><span><i class="sw api"></i>API (OpenRouter)</span></div></div>
+      <div class="bars" id="chart-in"></div>
+      <p class="chart-note">More than 99.9% of the Claude Code input is cached context: the agent's system prompt and tools, re-read on every turn. Sonnet sent only 10 uncached tokens, plus 89.5K cache writes and 349.8K cache reads.</p>
+    </div>
+    <div class="chart-card">
+      <div class="chart-head"><h3>Output tokens</h3><div class="legend"><span><i class="sw agent"></i>Agent</span><span><i class="sw api"></i>API</span></div></div>
+      <div class="bars" id="chart-out"></div>
+      <p class="chart-note">Output includes reasoning tokens. gpt-oss-20b wrote 23K tokens to answer a 1.3K-token prompt. Haiku's 33.8K came from 20 agent turns, many spent fighting a broken Windows <code>gcc</code>.</p>
+    </div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-head"><h3>Seconds until 13/13 coverage</h3><div class="legend"><span><i class="sw agent"></i>Agent</span><span><i class="sw api"></i>API</span></div></div>
+    <div class="bars" id="chart-time"></div>
+    <p class="chart-note">Time from run start to the step that covered line 13. LLM time counts against the 600 s budget, so a slow model delays every KLEE run after it. Hover a bar for total elapsed time and LLM wall time.</p>
+  </div>
+</section>
+
+<section aria-labelledby="models-h">
+  <div class="prose">
+    <div class="eyebrow">Run by run</div>
+    <h2 id="models-h">How each model did</h2>
+    <p>Ranked best to worst. The chips show the coverage progression; the green chip is the step that reached 13/13.</p>
+  </div>
+  <div class="cards" id="cards"></div>
+</section>
+
+<section aria-labelledby="table-h">
+  <h2 id="table-h">All numbers</h2>
+  <div class="table-wrap" role="region" aria-label="Full results table" tabindex="0">
+    <table id="tbl">
+      <thead><tr>
+        <th>Model</th><th>Backend</th><th>Coverage</th><th>Elapsed s</th><th>13/13 at s</th><th>Tests</th><th>Input tok</th><th>Output tok</th><th>LLM calls</th><th>LLM wall s</th><th>Cost (USD)</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <p class="small muted">Sources: <code>demo/results/*/report.json</code>, <code>llm/*.json</code>, <code>llm/usage.jsonl</code>. Agent turns and costs come from the Claude Code and Codex transcripts. OpenRouter runs did not record a cost.</p>
+</section>
+
+<section aria-labelledby="cav-h">
+  <h2 id="cav-h">Caveats</h2>
+  <ul class="caveats">
+    <li><b>One target, one run each.</b> This is a 13-line program. It shows whether a model spots the magic byte, not how it handles a parser or a math library. Run-to-run variance is unmeasured.</li>
+    <li><b>Two machines.</b> The Claude runs were made on one machine (Oct 25) and the Codex/OpenRouter runs on another (Oct 23). Explore took 5–11 s on both, so the hardware gap is small next to the LLM-time differences.</li>
+    <li><b>Agents did more checking.</b> Opus brute-forced every <code>char</code> in Python to prove '7' is the only trigger, then syntax-checked its harnesses in WSL. Single-shot API models can't run anything, so their speed partly comes from skipping verification.</li>
+    <li><b>Stray files in the DeepSeek folder.</b> <code>deepseek_v4.1_flash_1017/</code> reused a Mistral run directory (<code>float1-nemo-1</code>). Its <code>02_rewrite/</code>, triage and <code>0004/0005</code> LLM files are Mistral Nemo leftovers. DeepSeek's own report counts only its single partition call.</li>
+  </ul>
+</section>
+
+<footer>Built from the Gordian run artifacts in <code>demo/results/</code>. Target: <code>benchmarks/logic_bombs_src/floating_point/float1_fp_l1_klee.c</code>.</footer>
+</div>
+
+<div class="tip" id="tip" hidden></div>
+
+<script>
+const RUNS = [
+  { name: "DeepSeek V4.1 Flash", short: "DeepSeek V4.1 Flash", spec: "openrouter:deepseek/deepseek-v4.1-flash-1017", kind: "api",
+    cov: 13, elapsed: 43, full: 32, tests: 20, inTok: 1353, outTok: 8128, calls: 1, llm: 19.8, cost: null, turns: "1 call",
+    steps: [["explore", 12, 5], ["part 1", 13, 32], ["part 2", 13, 37], ["part 3", 13, 43]],
+    text: "Fastest and leanest. One 19.8 s API call gave four-case harnesses that write <code>s[0]</code> as a concrete digit ('7', '0', '9', '5' in part 1). Case 0 was the bomb input, so the first KLEE run covered line 13. No compiler check was possible, and none was needed: every harness built on the first try." },
+  { name: "Claude Sonnet 5.5", short: "Claude Sonnet 5.5", spec: "claude-code:claude-sonnet-5-5", kind: "agent",
+    cov: 13, elapsed: 86, full: 60, tests: 15, inTok: 439344, outTok: 2642, calls: 1, llm: 36.6, cost: 0.42, turns: "5 turns",
+    steps: [["explore", 12, 11], ["part 1", 13, 60], ["part 2", 13, 71], ["part 3", 13, 82]],
+    text: "The best agent run. It read the source, worked out the float rounding, and wrote three short (19–20 line) harnesses in 5 turns and 29 s. Every case in part 1 pins <code>s[0]='7'</code> and only varies the tail. That is narrow, but correct. It used the fewest output tokens of any model (2,642) and cost $0.42." },
+  { name: "GPT-6.1 Sol (medium)", short: "GPT-6.1 Sol", spec: "codex:default", kind: "agent",
+    cov: 13, elapsed: 94, full: 86, tests: 19, inTok: 79122, outTok: 2777, calls: 1, llm: 74.3, cost: null, turns: "Codex",
+    steps: [["explore", 12, 7], ["part 1", 13, 86], ["part 2", 13, 90], ["part 3", 13, 94]],
+    text: "Clean and well reasoned. Its comments explain the trick exactly: byte 55 ('7') makes <code>a == b</code> as floats while promoted <code>a</code> differs from the double 0.1. It used six cases per harness around the target digit. It used 79K input tokens (68K cached), far fewer than the Claude Code runs. No compiler was available, so it checked the arithmetic numerically." },
+  { name: "Claude Opus 5.5", short: "Claude Opus 5.5", spec: "claude-code:claude-opus-5-5", kind: "agent",
+    cov: 13, elapsed: 128, full: 100, tests: 25, inTok: 805522, outTok: 4470, calls: 1, llm: 77.8, cost: 0.96, turns: "9 turns",
+    steps: [["explore", 12, 10], ["part 1", 13, 100], ["part 2", 13, 113], ["part 3", 13, 124]],
+    text: "The most thorough run. Opus brute-forced every <code>char</code> in Python to prove '7' is the only trigger. When Windows <code>gcc</code> failed, it switched to WSL to syntax-check. Its three harnesses cover different families: fixed digits, a bounded symbolic range split into concrete values, and string-shape variants. That rigor cost 78 s of LLM time and $0.96, the most expensive run." },
+  { name: "Claude Haiku 5.5", short: "Claude Haiku 5.5", spec: "claude-code:claude-haiku-5-5", kind: "agent",
+    cov: 13, elapsed: 236, full: 204, tests: 34, inTok: 1512409, outTok: 33825, calls: 1, llm: 179.0, cost: 0.14, turns: "20 turns",
+    steps: [["explore", 12, 11], ["part 1", 13, 204], ["part 2", 13, 217], ["part 3", 13, 230]],
+    text: "Correct harnesses (part 1 pins '7' as case 0), but a long road there. The shell's default <code>gcc</code> exited 1 silently even on an empty file, and Haiku spent most of its 12 shell commands getting a working compiler before switching to MSYS2's. That made it the biggest token user (1.5M in, 33.8K out) and gave it the most tests (34). It was still the cheapest Claude run at $0.14." },
+  { name: "gpt-oss-20b", short: "gpt-oss-20b", spec: "openrouter:openai/gpt-oss-20b", kind: "api",
+    cov: 13, elapsed: 261, full: 261, tests: 11, inTok: 1333, outTok: 23018, calls: 1, llm: 241.2, cost: null, turns: "1 call",
+    steps: [["explore", 12, 9], ["part 1", 12, 254], ["part 2", 12, 257], ["part 3", 13, 261]],
+    text: "Got there, barely. It split the digits across the three harnesses: '0'–'2', then '3'–'5', then '6'–'9'. That is a sweep, not targeted reasoning, so only the last harness held '7'. Its single call ran for 241 s and produced 23K output tokens, 17× the prompt. That was the slowest run overall at 261 s." },
+  { name: "Mistral Nemo", short: "Mistral Nemo", spec: "openrouter:mistralai/mistral-nemo", kind: "api",
+    cov: 12, elapsed: 144, full: null, tests: 10, inTok: 5720, outTok: 1659, calls: 4, llm: 127.2, cost: null, turns: "4 calls",
+    steps: [["explore", 12, 6], ["part 1", 12, 72], ["part 2", 12, 74], ["part 3", 12, 77], ["model", null, 116], ["model fix", null, 144]],
+    text: "The only failure. Part 1 pinned <code>s[0]</code> to '1', '2', '3'. Parts 2 and 3 constrained <code>s[1]</code> and <code>s[2]</code>, which <code>logic_bomb</code> never reads. Triage correctly flagged line 13 as a float problem, but the surrogate model had a stray Markdown fence on line 1, called <code>klee_choose</code> with 3 arguments (it takes 1), and took the address of an rvalue, <code>&amp;(a - b)</code>. The repair call also failed to build. Its plan to reinterpret integer bits as a float was wrong anyway." },
+];
+
+const fmtInt = n => n.toLocaleString("en-US");
+const fmtCompact = n => n >= 1e6 ? (n / 1e6).toFixed(2).replace(/\.?0+$/, "") + "M" : n >= 1e3 ? (n / 1e3).toFixed(n >= 1e5 ? 0 : 1).replace(/\.0$/, "") + "K" : String(n);
+const kindLabel = k => k === "agent" ? "Agent backend" : "API (single-shot)";
+
+const tip = document.getElementById("tip");
+function tipHTML(r) {
+  const rows = [
+    ["Coverage", r.cov + "/13"],
+    ["13/13 at", r.full == null ? "never" : r.full + " s"],
+    ["Total elapsed", r.elapsed + " s"],
+    ["LLM wall time", r.llm + " s"],
+    ["Input tokens", fmtInt(r.inTok)],
+    ["Output tokens", fmtInt(r.outTok)],
+    ["Driven as", r.turns],
+  ];
+  return `<b>${r.name}</b><div class="muted">${kindLabel(r.kind)}</div><div class="kv">${rows.map(([k, v]) => `<span>${k}</span><span>${v}</span>`).join("")}</div>`;
+}
+function showTip(r, ev, el) {
+  tip.innerHTML = tipHTML(r);
+  tip.hidden = false;
+  let x, y;
+  if (ev && ev.clientX) { x = ev.clientX + 14; y = ev.clientY + 14; }
+  else { const b = el.getBoundingClientRect(); x = b.left + 40; y = b.bottom + 6; }
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  if (x + w > innerWidth - 8) x = Math.max(8, innerWidth - w - 8);
+  if (y + h > innerHeight - 8) y = Math.max(8, y - h - 28);
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+const hideTip = () => { tip.hidden = true; };
+
+function renderBars(id, opts) {
+  const host = document.getElementById(id);
+  const { value, scale, min, max, ticks, tickFmt, valFmt } = opts;
+  const pos = v => scale === "log"
+    ? (Math.log10(v) - Math.log10(min)) / (Math.log10(max) - Math.log10(min))
+    : (v - min) / (max - min);
+  const plot = document.createElement("div");
+  plot.className = "plot-bg";
+  plot.style.left = "calc(var(--label-w) + 10px)";
+  ticks.forEach((t, i) => {
+    const g = document.createElement("div");
+    g.className = "gridline" + (i === 0 ? " base" : "");
+    g.style.left = (pos(t) * 100) + "%";
+    plot.appendChild(g);
+  });
+  host.appendChild(plot);
+  RUNS.forEach(r => {
+    const v = value(r);
+    const row = document.createElement("div");
+    row.className = "bar-row";
+    row.tabIndex = 0;
+    row.setAttribute("aria-label", `${r.name}: ${v == null ? "not reached" : valFmt(v)}`);
+    const pct = v == null ? 0 : Math.max(0.5, pos(v) * 100);
+    row.innerHTML = `<div class="bar-label">${r.short}</div><div class="track">` +
+      (v == null
+        ? `<span class="bar-val none" style="left:0">✕ never reached 13/13</span>`
+        : `<div class="bar ${r.kind}" style="width:${pct}%"></div><span class="bar-val" style="left:${pct}%">${valFmt(v)}</span>`) +
+      `</div>`;
+    row.addEventListener("mousemove", e => showTip(r, e, row));
+    row.addEventListener("mouseleave", hideTip);
+    row.addEventListener("focus", () => showTip(r, null, row));
+    row.addEventListener("blur", hideTip);
+    host.appendChild(row);
+  });
+  const axis = document.createElement("div");
+  axis.className = "axis";
+  axis.innerHTML = `<div></div><div class="ticks">${ticks.map(t => `<span style="left:${pos(t) * 100}%">${tickFmt(t)}</span>`).join("")}</div>`;
+  host.appendChild(axis);
+}
+
+// Log axes leave headroom so the value label at the longest bar's tip stays inside the plot.
+renderBars("chart-in", { value: r => r.inTok, scale: "log", min: 100, max: 3e7, ticks: [100, 1e3, 1e4, 1e5, 1e6, 1e7], tickFmt: fmtCompact, valFmt: fmtCompact });
+renderBars("chart-out", { value: r => r.outTok, scale: "log", min: 100, max: 3e5, ticks: [100, 1e3, 1e4, 1e5], tickFmt: fmtCompact, valFmt: fmtCompact });
+renderBars("chart-time", { value: r => r.full, scale: "linear", min: 0, max: 330, ticks: [0, 60, 120, 180, 240, 300], tickFmt: t => t + " s", valFmt: v => v + " s" });
+
+const cards = document.getElementById("cards");
+RUNS.forEach((r, i) => {
+  const ok = r.cov === 13;
+  const winIdx = r.steps.findIndex(s => s[1] === 13);
+  const chips = r.steps.map((s, j) => {
+    const cls = j === winIdx ? "win" : (s[1] == null ? "fail" : "");
+    const label = s[1] == null ? `${s[0]} · build failed` : `${s[0]} · ${s[1]}/13 · ${s[2]}s`;
+    return `<span class="step ${cls}">${label}</span>`;
+  }).join("");
+  const el = document.createElement("article");
+  el.className = "card";
+  el.innerHTML = `
+    <div class="rank">${i + 1}</div>
+    <div class="body">
+      <div class="title-row">
+        <h3>${r.name}</h3>
+        <span class="pill ${ok ? "good" : "bad"}"><span class="ico" aria-hidden="true">${ok ? "✓" : "✕"}</span>${ok ? "100% coverage" : "92.3% coverage"}</span>
+        <span class="kind"><i class="sw ${r.kind}"></i>${kindLabel(r.kind)}</span>
+      </div>
+      <div class="spec">${r.spec}</div>
+      <p>${r.text}</p>
+      <div class="steps">${chips}</div>
+    </div>
+    <div class="stats">
+      <span>Elapsed</span><span>${r.elapsed} s</span>
+      <span>13/13 at</span><span>${r.full == null ? "—" : r.full + " s"}</span>
+      <span>Tests</span><span>${r.tests}</span>
+      <span>Input tokens</span><span>${fmtInt(r.inTok)}</span>
+      <span>Output tokens</span><span>${fmtInt(r.outTok)}</span>
+      <span>LLM time</span><span>${r.llm} s</span>
+      <span>Driven as</span><span>${r.turns}</span>
+      <span>Cost</span><span>${r.cost == null ? "n/a" : "$" + r.cost.toFixed(2)}</span>
+    </div>`;
+  cards.appendChild(el);
+});
+
+document.querySelector("#tbl tbody").innerHTML = RUNS.map(r => `<tr>
+  <td>${r.name}</td><td>${r.kind === "agent" ? "agent" : "API"}</td>
+  <td class="${r.cov < 13 ? "bad" : ""}">${r.cov}/13</td><td>${r.elapsed}</td><td>${r.full == null ? "—" : r.full}</td>
+  <td>${r.tests}</td><td>${fmtInt(r.inTok)}</td><td>${fmtInt(r.outTok)}</td><td>${r.calls}</td><td>${r.llm}</td>
+  <td>${r.cost == null ? "n/a" : "$" + r.cost.toFixed(2)}</td></tr>`).join("");
+</script>
