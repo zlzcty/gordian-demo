@@ -1,0 +1,15 @@
+{
+  "budget_s": 600,
+  "explore_fraction": 0.1,
+  "explore_max_s": 300,
+  "stages": [
+    "partition",
+    "rewrite",
+    "inversion"
+  ],
+  "context": "file",
+  "partition_variants": 3,
+  "inversion_candidates": 3,
+  "solver_timeout_s": null,
+  "keep_tests": false
+}

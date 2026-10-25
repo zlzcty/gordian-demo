@@ -1,0 +1,136 @@
+{
+  "stages": {
+    "partition": {
+      "harnesses": [
+        "/mnt/wsl/docker-desktop-bind-mounts/Ubuntu/49ba1acecaef49d72862a2cbf3b10fa867f9bf741674eaaa9dc002731bbae870/runs/lb_float1_fp_l1_20261025-145958/01_partition/harness_part1.c",
+        "/mnt/wsl/docker-desktop-bind-mounts/Ubuntu/49ba1acecaef49d72862a2cbf3b10fa867f9bf741674eaaa9dc002731bbae870/runs/lb_float1_fp_l1_20261025-145958/01_partition/harness_part2.c",
+        "/mnt/wsl/docker-desktop-bind-mounts/Ubuntu/49ba1acecaef49d72862a2cbf3b10fa867f9bf741674eaaa9dc002731bbae870/runs/lb_float1_fp_l1_20261025-145958/01_partition/harness_part3.c"
+      ],
+      "runs": [
+        {
+          "harness": "harness_part1.c",
+          "round": 0,
+          "ktests": 20,
+          "ok": true
+        },
+        {
+          "harness": "harness_part2.c",
+          "round": 0,
+          "ktests": 8,
+          "ok": true
+        },
+        {
+          "harness": "harness_part3.c",
+          "round": 0,
+          "ktests": 5,
+          "ok": true
+        }
+      ],
+      "seconds": 219
+    }
+  },
+  "target": "lb_float1_fp_l1",
+  "family": "logic_bombs",
+  "backend": "claude-code:claude-haiku-5-5",
+  "budget_s": 600.0,
+  "elapsed_s": 236,
+  "coverage": {
+    "covered": 13,
+    "total": 13,
+    "ratio": 1.0,
+    "files": {
+      "benchmarks/logic_bombs_src/floating_point/float1_fp_l1_klee.c": {
+        "covered": 13,
+        "total": 13,
+        "ratio": 1.0
+      }
+    }
+  },
+  "bombs_reached": [],
+  "tests": 34,
+  "suite": [
+    {
+      "group": 0,
+      "harness": null,
+      "ktests": 1,
+      "copied": 1,
+      "source_dirs": [
+        "/mnt/wsl/docker-desktop-bind-mounts/Ubuntu/49ba1acecaef49d72862a2cbf3b10fa867f9bf741674eaaa9dc002731bbae870/runs/lb_float1_fp_l1_20261025-145958/variants/00_explore/klee"
+      ]
+    },
+    {
+      "group": 1,
+      "harness": "/mnt/wsl/docker-desktop-bind-mounts/Ubuntu/49ba1acecaef49d72862a2cbf3b10fa867f9bf741674eaaa9dc002731bbae870/runs/lb_float1_fp_l1_20261025-145958/01_partition/harness_part1.c",
+      "ktests": 20,
+      "copied": 20,
+      "source_dirs": [
+        "/mnt/wsl/docker-desktop-bind-mounts/Ubuntu/49ba1acecaef49d72862a2cbf3b10fa867f9bf741674eaaa9dc002731bbae870/runs/lb_float1_fp_l1_20261025-145958/variants/01_partition_1/klee"
+      ]
+    },
+    {
+      "group": 2,
+      "harness": "/mnt/wsl/docker-desktop-bind-mounts/Ubuntu/49ba1acecaef49d72862a2cbf3b10fa867f9bf741674eaaa9dc002731bbae870/runs/lb_float1_fp_l1_20261025-145958/01_partition/harness_part2.c",
+      "ktests": 8,
+      "copied": 8,
+      "source_dirs": [
+        "/mnt/wsl/docker-desktop-bind-mounts/Ubuntu/49ba1acecaef49d72862a2cbf3b10fa867f9bf741674eaaa9dc002731bbae870/runs/lb_float1_fp_l1_20261025-145958/variants/01_partition_2/klee"
+      ]
+    },
+    {
+      "group": 3,
+      "harness": "/mnt/wsl/docker-desktop-bind-mounts/Ubuntu/49ba1acecaef49d72862a2cbf3b10fa867f9bf741674eaaa9dc002731bbae870/runs/lb_float1_fp_l1_20261025-145958/01_partition/harness_part3.c",
+      "ktests": 5,
+      "copied": 5,
+      "source_dirs": [
+        "/mnt/wsl/docker-desktop-bind-mounts/Ubuntu/49ba1acecaef49d72862a2cbf3b10fa867f9bf741674eaaa9dc002731bbae870/runs/lb_float1_fp_l1_20261025-145958/variants/01_partition_3/klee"
+      ]
+    }
+  ],
+  "history": [
+    {
+      "label": "00_explore",
+      "ktests": 1,
+      "new_lines": 12,
+      "covered": 12,
+      "total": 13,
+      "t": 11,
+      "harness": null
+    },
+    {
+      "label": "01_partition_1",
+      "ktests": 20,
+      "new_lines": 1,
+      "covered": 13,
+      "total": 13,
+      "t": 204,
+      "harness": "/mnt/wsl/docker-desktop-bind-mounts/Ubuntu/49ba1acecaef49d72862a2cbf3b10fa867f9bf741674eaaa9dc002731bbae870/runs/lb_float1_fp_l1_20261025-145958/01_partition/harness_part1.c"
+    },
+    {
+      "label": "01_partition_2",
+      "ktests": 8,
+      "new_lines": 0,
+      "covered": 13,
+      "total": 13,
+      "t": 217,
+      "harness": "/mnt/wsl/docker-desktop-bind-mounts/Ubuntu/49ba1acecaef49d72862a2cbf3b10fa867f9bf741674eaaa9dc002731bbae870/runs/lb_float1_fp_l1_20261025-145958/01_partition/harness_part2.c"
+    },
+    {
+      "label": "01_partition_3",
+      "ktests": 5,
+      "new_lines": 0,
+      "covered": 13,
+      "total": 13,
+      "t": 230,
+      "harness": "/mnt/wsl/docker-desktop-bind-mounts/Ubuntu/49ba1acecaef49d72862a2cbf3b10fa867f9bf741674eaaa9dc002731bbae870/runs/lb_float1_fp_l1_20261025-145958/01_partition/harness_part3.c"
+    }
+  ],
+  "llm_usage": {
+    "input_tokens": 1512409,
+    "output_tokens": 33825,
+    "calls": 1,
+    "wall_seconds": 0.0
+  },
+  "uncovered": {
+    "benchmarks/logic_bombs_src/floating_point/float1_fp_l1_klee.c": []
+  }
+}

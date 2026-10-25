@@ -1,0 +1,27 @@
+{
+  "harnesses": [
+    "/mnt/wsl/docker-desktop-bind-mounts/Ubuntu/49ba1acecaef49d72862a2cbf3b10fa867f9bf741674eaaa9dc002731bbae870/runs/lb_float1_fp_l1_20261025-151444/01_partition/harness_part1.c",
+    "/mnt/wsl/docker-desktop-bind-mounts/Ubuntu/49ba1acecaef49d72862a2cbf3b10fa867f9bf741674eaaa9dc002731bbae870/runs/lb_float1_fp_l1_20261025-151444/01_partition/harness_part2.c",
+    "/mnt/wsl/docker-desktop-bind-mounts/Ubuntu/49ba1acecaef49d72862a2cbf3b10fa867f9bf741674eaaa9dc002731bbae870/runs/lb_float1_fp_l1_20261025-151444/01_partition/harness_part3.c"
+  ],
+  "runs": [
+    {
+      "harness": "harness_part1.c",
+      "round": 0,
+      "ktests": 6,
+      "ok": true
+    },
+    {
+      "harness": "harness_part2.c",
+      "round": 0,
+      "ktests": 10,
+      "ok": true
+    },
+    {
+      "harness": "harness_part3.c",
+      "round": 0,
+      "ktests": 8,
+      "ok": true
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "name": "partition",
+  "backend": "claude-code",
+  "model": "claude-sonnet-5-5",
+  "ok": true,
+  "missing": [],
+  "error": null,
+  "usage": {
+    "input_tokens": 439344,
+    "output_tokens": 2642,
+    "calls": 1,
+    "wall_seconds": 36.56
+  },
+  "instructions": "You are extending KLEE symbolic execution with *semantic partitioning* (ghost code).\nThe program `float1_fp_l1_klee.annotated.c` contains its own KLEE `main()` which makes the inputs symbolic and calls the\ncode under test, but KLEE could not reach the lines marked `// UNCOVERED` (path explosion on\npointer/heap shapes, dispatch tables, loops over structured input, ...).\n\nWrite 3 replacement harness files `harness_part1.c` ... `harness_part3.c`.  Each is a C file that contains\nONLY a new `int main(void)` (plus static helpers and `#include` lines; it must NOT redefine any\nfunction or global of the program, which is linked in separately with its original main renamed).\nDeclare the program's functions you call with `extern` prototypes copied from the program.\nEach main():\n  1. declares a fresh symbolic selector `int klass = klee_range(0, N, \"klass\");` and a `switch (klass)`\n     with 3-8 cases; each case builds ONE semantically meaningful, partially-concrete configuration of\n     the inputs/heap (concrete shape and links, symbolic values with `klee_make_symbolic` bounded by\n     `klee_assume`), chosen so that the UNCOVERED lines become reachable;\n  2. calls the same function(s) the original main calls, with the configured inputs.\nThe variants must be complementary (different families of configurations).  Keep inputs small.\nKLEE rules (both KLEE 3.0 and KLEE-Float accept these):\n- Symbolic inputs: klee_make_symbolic(&v, sizeof(v), \"name\"); constraints: klee_assume(cond);\n  ranges: klee_range(lo, hi, \"name\") (hi exclusive); klee_assert(cond); klee_silent_exit(0).\n- Only #include <klee/klee.h> is needed for the intrinsics. \"klee_extra.h\" (same include path) provides\n  klee_choose(name, lo, hi), an inclusive-range symbolic int.\n- Plain C99, no C++, no VLAs with symbolic size, no threads, no printf of symbolic data needed.\n- Every symbolic object must have a distinct name; keep names short and stable.\n- Declare main as `int main(int argc, char **argv)` (KLEE's POSIX runtime requires the arguments).\n- klee_make_symbolic(p, n, name): p must point to a real, writable object of EXACTLY n bytes\n  (`klee_make_symbolic(&x, sizeof x, \"x\")`, `klee_make_symbolic(buf, sizeof buf, \"buf\")` for arrays);\n  never pass sizeof a pointer, a string literal, a NULL/uninitialised pointer or a size larger than the object:\n  KLEE aborts the path with \"Wrong size given to klee_make_symbolic\" / \"invalid pointer: make_symbolic\".\n  The pointer must be the START of a complete object and n its full size: you cannot make a single element,\n  a sub-range (`buf + i`) or a struct field symbolic on its own.  Make the whole buffer/struct symbolic once,\n  then shape it with klee_assume on the elements (`klee_assume(buf[i] >= 'a' && buf[i] <= 'z')`) or copy\n  symbolic values into place.\n- Heap objects for topologies: malloc them first, then make their fields symbolic; keep counts small.\n\n",
+  "inputs": [
+    "float1_fp_l1_klee.annotated.c",
+    "klee_notes.txt"
+  ],
+  "outputs": [
+    "harness_part1.c",
+    "harness_part2.c",
+    "harness_part3.c"
+  ]
+}
