@@ -1,0 +1,12 @@
+# KLEE diagnostics from previous runs on this program
+# Each line is a KLEE warning/error.  The most important kind is
+#   "silently concretizing (reason: floating point) expression ... to value ... (file:line)"
+# standard KLEE cannot reason about floating-point operations on symbolic values: at that point the
+# symbolic input is replaced by ONE concrete value and every branch after it is explored with that value
+# only.  To keep inputs symbolic, the code must branch on integer bit patterns (memcpy the double into a
+# uint64_t / use the __HI_model/__LO_model word accessors) and do integer arithmetic; floating-point
+# arithmetic may only be applied to concrete values (e.g. inside a case split).
+# "calling external: f(...)" means f ran natively on concrete arguments (no symbolic reasoning through it).
+## 00_explore
+calling external: syscall(16, 0, 21505, 105495594979168) at klee_src/runtime/POSIX/fd.c:1011 10
+silently concretizing (reason: floating point) expression (Add w32 4294967248

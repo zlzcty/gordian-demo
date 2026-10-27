@@ -1,0 +1,14 @@
+{
+  "ktests": 1,
+  "uncovered": {
+    "benchmarks/logic_bombs_src/floating_point/float1_fp_l1_klee.c": {
+      "uncovered": 1,
+      "regions": [
+        [
+          13,
+          13
+        ]
+      ]
+    }
+  }
+}
