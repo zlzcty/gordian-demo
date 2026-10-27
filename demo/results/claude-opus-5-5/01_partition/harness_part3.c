@@ -11,25 +11,34 @@ extern int logic_bomb(char *s);
 int main(int argc, char **argv) {
     char s[5];
     int i;
-    int klass = klee_range(0, 5, "klass");
+    int klass = klee_range(0, 5, "klass"); 
     klee_make_symbolic(s, sizeof s, "s");
     klee_assume(s[4] == '\0');
+
     switch (klass) {
     case 0: /* "7ddd": numeric string starting with 7 */
         s[0] = '7';
-        for (i = 1; i < 4; i++) klee_assume(s[i] >= '0' && s[i] <= '9');
+        // assume that the remaining characters of the string are digits
+        for (i = 1; i < 4; i++) klee_assume(s[i] >= '0' && s[i] <= '9'); 
         break;
+
     case 1: /* "7" with early terminator */
         s[0] = '7';
-        s[1] = '\0';
+        // assume that the second character of the string is null terminator
+        s[1] = '\0'; 
         break;
+
     case 2: /* '7' followed by arbitrary bytes */
         s[0] = '7';
         break;
+
     case 3: /* high-bit char: negative symvar */
+        // assume that the first character of the string is a negative value
         s[0] = (char)-56;
         break;
+
     default: /* empty string */
+        // assume that the first character of the string is null terminator
         s[0] = '\0';
         break;
     }

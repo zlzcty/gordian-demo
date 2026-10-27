@@ -1,3 +1,4 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Gordian Float Bomb Showdown</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -96,29 +97,6 @@ header.top { display: flex; flex-direction: column; gap: 14px; border-bottom: 1p
 .pill.good { background: var(--good-bg); color: var(--good); }
 .pill.bad { background: var(--bad-bg); color: var(--bad); }
 .pill .ico { font-size: 0.85rem; line-height: 1; }
-
-/* pipeline */
-.pipeline { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; counter-reset: stage; }
-.stage { border-left: 2px solid var(--rule); padding: 4px 0 4px 14px; display: flex; flex-direction: column; gap: 4px; }
-.stage .num { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); }
-.stage b { font-family: var(--font-display); font-size: 1.05rem; }
-.stage p { font-size: 0.9rem; color: var(--ink-2); }
-
-/* code */
-.codebox { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; overflow-x: auto; }
-.codebox pre { margin: 0; padding: 14px 0; font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.65; min-width: max-content; }
-.codebox .ln { display: block; padding: 0 18px 0 0; }
-.codebox .ln::before { content: attr(data-n); display: inline-block; width: 3.2em; padding-right: 1em; text-align: right; color: var(--muted); }
-.codebox .ln.hit { background: var(--hl); }
-.codebox .tag { font-family: var(--font-body); font-size: 0.75rem; color: var(--ink-2); margin-left: 12px; }
-.two-col { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 28px; align-items: start; }
-@media (max-width: 820px) { .two-col { grid-template-columns: minmax(0, 1fr); } }
-
-/* glossary */
-dl.gloss { display: grid; grid-template-columns: minmax(150px, max-content) minmax(0, 1fr); gap: 10px 22px; margin: 0; }
-dl.gloss dt { font-family: var(--font-mono); font-size: 0.85rem; font-weight: 500; padding-top: 2px; }
-dl.gloss dd { margin: 0; color: var(--ink-2); }
-@media (max-width: 560px) { dl.gloss { grid-template-columns: minmax(0, 1fr); gap: 2px; } dl.gloss dd { margin-bottom: 10px; } }
 
 /* charts */
 .chart-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 20px 20px 14px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
@@ -232,54 +210,6 @@ footer { font-size: 0.8rem; color: var(--muted); border-top: 1px solid var(--rul
   <p class="small muted">Ranking rule: coverage first, then time until 13/13, then LLM effort (tokens, turns). Six models tie on coverage, so speed and efficiency decide the order.</p>
 </section>
 
-<section aria-labelledby="what-h">
-  <div class="prose">
-    <div class="eyebrow">Background</div>
-    <h2 id="what-h">What Gordian is</h2>
-    <p>Gordian is a layer on top of <b>KLEE</b>, a symbolic execution engine that explores a C program's paths and generates test inputs for them. KLEE struggles with code that is hard for its constraint solver: floating-point math, crypto, heap shapes, parsers. Gordian has an LLM write <b>ghost code</b>, temporary scaffolding that makes those spots tractable. KLEE then explores the scaffolded program, and every test it produces is <b>replayed on the unmodified program</b>. Only coverage measured on the original code counts.</p>
-    <p>A run moves through four stages. Each stage only works on what is still uncovered, so a run that hits 100% early skips the rest.</p>
-  </div>
-  <div class="pipeline">
-    <div class="stage"><span class="num">stage 0</span><b>Explore</b><p>A short plain-KLEE run on the original program. It finds the uncovered lines.</p></div>
-    <div class="stage"><span class="num">stage 1</span><b>Partition</b><p>The LLM writes 3 harnesses. Each splits the input into a few concrete "classes" chosen to reach the uncovered lines.</p></div>
-    <div class="stage"><span class="num">stage 2</span><b>Rewrite</b><p>The LLM triages what is left and writes a solver-friendly surrogate of the hard code.</p></div>
-    <div class="stage"><span class="num">stage 3</span><b>Inversion</b><p>For invertible computations: replace the code with a havoc and solve backwards from the target.</p></div>
-  </div>
-</section>
-
-<section aria-labelledby="bomb-h">
-  <div class="two-col">
-    <div class="prose">
-      <div class="eyebrow">The target</div>
-      <h2 id="bomb-h">Why this bomb is hard</h2>
-      <p><code>lb_float1_fp_l1</code> is a "logic bomb" from the LogicBombs suite. The goal is to reach <code>return BOMB_ENDING</code> on line 13.</p>
-      <p>Only one input works: <code>s[0] == '7'</code>. Then <code>7/70.0</code> is the double 0.1, which rounds to the float <code>0.100000001490116…</code>. That float is <em>not</em> equal to the double <code>0.1</code>, so the outer <code>if</code> passes. But <code>a - b</code> subtracts two identical floats and gives 0, so the bomb fires.</p>
-      <p>Standard KLEE picks one concrete value for a symbolic number as soon as it reaches floating-point math. So the explore stage tries a single <code>s[0]</code>, takes the normal path, and covers <b>12 of 13</b> lines in about 10 s. To win, the LLM has to notice that <code>'7'</code> is the magic byte and pin it in a harness <em>before</em> the float operations run.</p>
-    </div>
-    <div class="codebox" role="region" aria-label="Source of float1_fp_l1_klee.c" tabindex="0">
-<pre><span class="ln" data-n="6">// {"s":{"length": 4}}</span><span class="ln" data-n="7">int logic_bomb(char* s) {</span><span class="ln" data-n="8">    int symvar = s[0] - 48;</span><span class="ln" data-n="9">    float a = symvar/70.0;</span><span class="ln" data-n="10">    float b = 0.1;</span><span class="ln" data-n="11">    if(a != 0.1){</span><span class="ln" data-n="12">        if(a - b == 0)</span><span class="ln hit" data-n="13">            return BOMB_ENDING;<span class="tag">← the one line explore can't reach</span></span><span class="ln" data-n="14">    }</span><span class="ln" data-n="15">    return NORMAL_ENDING;</span><span class="ln" data-n="16">}</span><span class="ln" data-n="17"></span><span class="ln" data-n="18">int main(int argc, char** argv) {</span><span class="ln" data-n="19">    char s[5];</span><span class="ln" data-n="20">    klee_make_symbolic(&amp;s, sizeof(s), "s");</span><span class="ln" data-n="21">    klee_assume(s[4]=='\0');</span><span class="ln" data-n="22">    return logic_bomb(s);</span><span class="ln" data-n="23">}</span></pre>
-    </div>
-  </div>
-</section>
-
-<section aria-labelledby="read-h">
-  <div class="prose">
-    <div class="eyebrow">Reading a report</div>
-    <h2 id="read-h">What each result means</h2>
-    <p>Every run folder has a <code>report.md</code>. These are its fields.</p>
-  </div>
-  <dl class="gloss">
-    <dt>line coverage</dt><dd>Lines of the original <code>float1_fp_l1_klee.c</code> executed by the replayed tests. 13 lines are coverable, so <b>13/13</b> means the bomb line ran and <b>12/13</b> means it never did.</dd>
-    <dt>test cases</dt><dd>The number of KLEE test inputs (<code>.ktest</code> files) kept across all stages. More is not better here. Six cases are enough if one of them has <code>s[0]='7'</code>.</dd>
-    <dt>bombs reached: 0</dt><dd>This is 0 for every run, including the winners, and it is not a failure. The counter only picks up a <code>GORDIAN_BOMB_REACHED</code> marker printed during replay. This bomb signals by returning <code>BOMB_ENDING</code> (3) instead, so covering line 13 is the proof that it fired.</dd>
-    <dt>LLM usage</dt><dd>Input and output tokens summed over all LLM calls in the run. <code>calls</code> counts Gordian tasks, not agent turns. One Claude Code task can be 5 to 20 turns.</dd>
-    <dt>00_explore</dt><dd>The plain-KLEE baseline. It gave 1 test and 12/13 lines in every run.</dd>
-    <dt>01_partition_N</dt><dd>KLEE run on the LLM's harness number N. <code>ktests</code> = tests it produced; <code>new lines</code> = lines no earlier step covered; <code>t</code> = seconds since the run started.</dd>
-    <dt>02_model_*</dt><dd>The rewrite stage's surrogate model. It only appears for Mistral Nemo, the one run where partitioning failed. <code>build failed</code> means the generated C did not compile.</dd>
-    <dt>triage</dt><dd>The LLM's routing of each leftover region to <code>model</code> or <code>inversion</code>, with a confidence score and a reason.</dd>
-  </dl>
-</section>
-
 <section aria-labelledby="charts-h">
   <div class="prose">
     <div class="eyebrow">Charts</div>
@@ -333,7 +263,7 @@ footer { font-size: 0.8rem; color: var(--muted); border-top: 1px solid var(--rul
     <li><b>One target, one run each.</b> This is a 13-line program. It shows whether a model spots the magic byte, not how it handles a parser or a math library. Run-to-run variance is unmeasured.</li>
     <li><b>Two machines.</b> The Claude runs were made on one machine (Oct 25) and the Codex/OpenRouter runs on another (Oct 23). Explore took 5–11 s on both, so the hardware gap is small next to the LLM-time differences.</li>
     <li><b>Agents did more checking.</b> Opus brute-forced every <code>char</code> in Python to prove '7' is the only trigger, then syntax-checked its harnesses in WSL. Single-shot API models can't run anything, so their speed partly comes from skipping verification.</li>
-    <li><b>Stray files in the DeepSeek folder.</b> <code>deepseek_v4.1_flash_1017/</code> reused a Mistral run directory (<code>float1-nemo-1</code>). Its <code>02_rewrite/</code>, triage and <code>0004/0005</code> LLM files are Mistral Nemo leftovers. DeepSeek's own report counts only its single partition call.</li>
+    <li><b>Stray folders in the DeepSeek run.</b> <code>deepseek_v4.1_flash_1017/</code> was run in a directory left over from an earlier Mistral Nemo run (<code>float1-nemo-1</code>). So <code>02_rewrite/</code>, <code>03_inversion/</code>, <code>coverage/02_model_*</code>, <code>variants/02_model_*</code>, the triage files and LLM calls <code>0003</code>–<code>0005</code> make it look as if DeepSeek ran all three stages. It did not. Its <code>report.json</code> lists only the partition stage, its history ends at <code>01_partition_3</code>, the leftover LLM files and <code>usage.jsonl</code> lines name <code>mistralai/mistral-nemo</code>, and <code>03_inversion/result.json</code> is empty. DeepSeek reached 13/13 at <code>01_partition_1</code>, so Gordian never started the later stages.</li>
   </ul>
 </section>
 
@@ -491,3 +421,5 @@ document.querySelector("#tbl tbody").innerHTML = RUNS.map(r => `<tr>
   <td>${r.tests}</td><td>${fmtInt(r.inTok)}</td><td>${fmtInt(r.outTok)}</td><td>${r.calls}</td><td>${r.llm}</td>
   <td>${r.cost == null ? "n/a" : "$" + r.cost.toFixed(2)}</td></tr>`).join("");
 </script>
+
+</body></html>
